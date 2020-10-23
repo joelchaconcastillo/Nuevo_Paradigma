@@ -425,9 +425,9 @@ void CMOEAD::eval_R2(CIndividual &indiv)
   vector<set<int> > fronts = non_dominated_sorting(indiv.y_obj);
   double totalsum = 0.0; 
   //adding earch rank...
-  for(int r = 0; r < fronts.size(); r++)
+//  for(int r = 0; r < fronts.size(); r++)
   {
-//	int r = 0;// fronts.size()-1;
+	int r = 0;// fronts.size()-1;
      for(int w = 0; w < nWeight; w++)
      {
        double minv = DBL_MAX;

@@ -52,24 +52,29 @@ void diff_evo_xoverA(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CI
 {
 	// Check Whether the cross-over to be performed
 	/*Loop over no of variables*/
-	int idx_rnd = rand()%(nvar*nInd);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
-	for(int n=0;n<nvar*nInd;n++)
+	//int idx_rnd = rand()%(nvar*nInd);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
+   for(int ids=0; ids<nInd;ids++)
+   {
+	int idx_rnd = rand()%(nvar);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
+   //	int ids=rand()%nInd;
+	for(int n=0;n<nvar;n++)
 	{
 	  double rnd = rnd_uni(&rnd_uni_init);
 	  if(rnd<CR||n==idx_rnd)
-		  child.x_var[n] = ind1.x_var[n] + F*(ind2.x_var[n] - ind3.x_var[n]);
+		  child.x_var[ids*nvar + n] = ind1.x_var[ids*nvar + n] + F*(ind2.x_var[ids*nvar + n] - ind3.x_var[ids*nvar + n]);
 	  else
-		  child.x_var[n] = ind0.x_var[n];
+		  child.x_var[ids*nvar + n] = ind0.x_var[ids*nvar + n];
 
-	if(child.x_var[n]<vlowBound[n]){
- 	       child.x_var[n] = ind0.x_var[n];//vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
+	if(child.x_var[ids*nvar + n]<vlowBound[ids*nvar + n]){
+ 	       child.x_var[ids*nvar + n] = ind0.x_var[ids*nvar + n];//vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
 	  }
 	  if(child.x_var[n]>vuppBound[n]){ 
-	        child.x_var[n] = ind0.x_var[n];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
+	        child.x_var[ids*nvar + n] = ind0.x_var[ids*nvar + n];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
 	  }
-	  if(child.x_var[n]<vlowBound[n]) child.x_var[n] = vlowBound[n];
-	  if(child.x_var[n]>vuppBound[n]) child.x_var[n] = vuppBound[n];
+	  if(child.x_var[ids*nvar + n]<vlowBound[ids*nvar + n]) child.x_var[ids*nvar + n] = vlowBound[ids*nvar + n];
+	  if(child.x_var[ids*nvar + n]>vuppBound[ids*nvar + n]) child.x_var[ids*nvar + n] = vuppBound[ids*nvar + n];
 	}
+   }
 }
 
 //diff_evo_xoverB
