@@ -298,8 +298,9 @@ void CMOEAD::replacement_phase(CIndividual &parent, CIndividual &child)
      for(int k = 0,idx=0; k < parent.y_obj.size(); k++)
      {
         y_obj.push_back(parent.y_obj[k]);
-        y_obj.push_back(child.y_obj[k]);
 	x_var.push_back(parent.x_var[k]);
+	candidates.insert(idx++);
+        y_obj.push_back(child.y_obj[k]);
 	x_var.push_back(child.x_var[k]);
 	candidates.insert(idx++);
      }
