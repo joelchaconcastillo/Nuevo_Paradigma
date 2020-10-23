@@ -21,7 +21,7 @@ class CMOEAD
 
 	void init_population();                
 	void update_reference(CIndividual &ind); 
-	void replacement_phase();
+	void replacement_phase(CIndividual &parent,CIndividual &child);
 	void evol_population();                                    
 	void exec_emo(int run);
 	void save_front(char savefilename[4024]); 
@@ -135,9 +135,8 @@ void CMOEAD::evol_population()
       child.obj_eval();
       update_reference(child); //O(M)
    }
-
    for(int i = 0; i < nOffspring; i++)
-   replacement_phase(pool[child_idx[i]], pool[parent_idx]);
+   replacement_phase(pool[parent_idx[i]], pool[child_idx[i]]);
 }
 void CMOEAD::exec_emo(int run)
 {
@@ -285,7 +284,7 @@ void CMOEAD::R2_contribution_subset(unordered_set<int> &candidates, unordered_se
   for(auto idx_c:candidates) distances[idx_c] = min(distances[idx_c], distance_var(x_var[idx_c], x_var[max_contribution.second]));
   for(auto idx_p:penalized) distances[idx_p] = min(distances[idx_p], distance_var(x_var[idx_p], x_var[max_contribution.second]));
 }
-void CMOEAD::replacement_phase(CIndividual &parent,CIndividual &child)
+void CMOEAD::replacement_phase(CIndividual &parent, CIndividual &child)
 {
    vector<vector<double> > x_var, y_obj, table_fitness;
    vector<double> distances;
@@ -296,7 +295,7 @@ void CMOEAD::replacement_phase(CIndividual &parent,CIndividual &child)
    vector<set<pair<double, int> > > survivors_weight;
 
  
-     for(int k = 0; k < parent.y_obj.size(); k++)
+     for(int k = 0,idx=0; k < parent.y_obj.size(); k++)
      {
         y_obj.push_back(parent.y_obj[k]);
         y_obj.push_back(child.y_obj[k]);
@@ -314,22 +313,23 @@ void CMOEAD::replacement_phase(CIndividual &parent,CIndividual &child)
         table_fitness[w_id][c_idx] = fitnessfunction(y_obj[c_idx], namda[w_id]);
 
    dominance_information(Sp, Np, candidates_front, y_obj);
-  //contribution based in R2-indicator..
-  //R2_contribution_subset(candidates, candidates_front, survivors, survivors_front, penalized, survivors_weight, distances, table_fitness, x_var);
-  //for(auto s_idx:survivors) for(auto c_idx:candidates) distances[c_idx] = min(distances[c_idx], distance_var(x_var[s_idx], x_var[c_idx]));
-   for(int k = 0; k < nPop; k++)
-   {
-      while(survivors.size() < (k+1)*nInd)
+
+  R2_contribution_subset(candidates, candidates_front, survivors, survivors_front, penalized, survivors_weight, distances, table_fitness, x_var);
+  for(auto s_idx:survivors) for(auto c_idx:candidates) distances[c_idx] = min(distances[c_idx], distance_var(x_var[s_idx], x_var[c_idx]));
+
+      while(survivors.size() < nInd)
       {
          //penalize nearest individuals
+           if(!candidates.empty()) 
+    	penalization(candidates, penalized, distances, candidates_front, Sp, Np);
          if( candidates.empty()) break;
          if(candidates_front.empty())
            update_lowest_front(candidates_front, survivors_front, Sp, Np);
          else 
             R2_contribution_subset(candidates, candidates_front, survivors, survivors_front, penalized, survivors_weight, distances, table_fitness, x_var);
+    
       }
-      if(!candidates.empty())  penalization(candidates, penalized, distances, candidates_front, Sp, Np);
-      while( survivors.size() < (k+1)*nInd)
+      while( survivors.size() < nInd)
       {
           pair<double, int> max_spread = make_pair(-DBL_MAX, -1);
           for( auto p_idx : penalized)
@@ -343,13 +343,11 @@ void CMOEAD::replacement_phase(CIndividual &parent,CIndividual &child)
              distances[p_idx] = min(distances[p_idx], distance_var(x_var[p_idx], x_var[max_spread.second]));
           }
       }
-     survivors_weight.assign(nWeight, set<pair<double, int>>());
-    }
   int idx = 0;
   for(auto s_idx:survivors)
   {
-    pool[parent_idx[idx/nInd]].y_obj[idx%nInd] = y_obj[s_idx];
-    pool[parent_idx[idx/nInd]].x_var[idx%nInd] = x_var[s_idx];
+    parent.y_obj[idx] = y_obj[s_idx];
+    parent.x_var[idx] = x_var[s_idx];
     idx++; 
   } 
 }
