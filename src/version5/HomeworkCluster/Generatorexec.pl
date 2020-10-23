@@ -20,13 +20,13 @@ foreach my $Di(@DI)
 {
 	#   my $Di = 0.4;
    my $Df = 0.5;
-   my $pops=50;
-   my $nind=10;
+   my $pops=10;
+   my $nOffspring = 10; 
+   my $nind=30;
    my $max_nfes=25000000;
    my $CR = 0.0;
    my $F = 0.75;
    my $nWeights = 501;
-   my $nOffspring = 50; 
    
    my @Instance = ("DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4", "DTLZ5", "DTLZ6", "DTLZ7");
          foreach(@Instance)
