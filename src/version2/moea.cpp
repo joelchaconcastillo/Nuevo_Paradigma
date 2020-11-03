@@ -43,14 +43,6 @@ void InitializeBounds(int nvar, char * Instance)
                    vuppBound[i]=3.0;
                 }
         }
-      for(int k = 1; k < nInd; k++)
-      {
-	for(int i = 0; i < nvar; i++)
-	{
-	   vlowBound[k*nvar+i] = vlowBound[i];
-	   vuppBound[k*nvar+i] = vuppBound[i];
-	}
-      }
 }
 int main(int argc, char *argv[])
 {

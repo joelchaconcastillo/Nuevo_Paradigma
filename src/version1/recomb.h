@@ -5,19 +5,19 @@
 #include "individual.h"
 
 /* Routine for real polynomial mutation of an T */
-void realmutation(CIndividual &ind, double rate)
+void realmutation(vector<double> &ind, double rate)
 {
     long double rnd, delta1, delta2, mut_pow, deltaq;
     long double y, yl, yu, val, xy;
     long double eta_m = etam;
 
-	int id_rnd = int(rnd_uni(&rnd_uni_init)*nvar*nInd);
+	int id_rnd = rand()%nvar;
 
-    for (int j=0; j<nvar*nInd; j++)
+    for (int j=0; j<nvar; j++)
     {
         if (rnd_uni(&rnd_uni_init)<=rate)
         {
-            y  = ind.x_var[j];
+            y  = ind[j];
             yl = vlowBound[j];
             yu = vuppBound[j];
             delta1 = (y-yl)/(yu-yl);
@@ -41,137 +41,33 @@ void realmutation(CIndividual &ind, double rate)
                 y = yl;
             if (y>yu)
                 y = yu;
-            ind.x_var[j] = y;
+            ind[j] = y;
         }
     }
     return;
 }
 
-
-void diff_evo_xoverA(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CIndividual &ind3, CIndividual &child, double CR, double F)
+void diff_evo_xoverA(vector<double> &ind0, vector<double> &ind1, vector<double> &ind2, vector<double> &ind3, vector<double> &child, double CR, double F)
 {
 	// Check Whether the cross-over to be performed
 	/*Loop over no of variables*/
-	int idx_rnd = rand()%(nvar*nInd);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
-	for(int n=0;n<nvar*nInd;n++)
+	int idx_rnd = rand()%(nvar);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
+	for(int n=0;n<nvar;n++)
 	{
 	  double rnd = rnd_uni(&rnd_uni_init);
 	  if(rnd<CR||n==idx_rnd)
-		  child.x_var[n] = ind1.x_var[n] + F*(ind2.x_var[n] - ind3.x_var[n]);
+		  child[n] = ind1[n] + F*(ind2[n] - ind3[n]);
 	  else
-		  child.x_var[n] = ind0.x_var[n];
+		  child[n] = ind0[n];
 
-	if(child.x_var[n]<vlowBound[n]){
- 	       child.x_var[n] = ind0.x_var[n];//vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
+	  if(child[n]<vlowBound[n]){
+ 	       child[n] = ind0[n];//vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
 	  }
-	  if(child.x_var[n]>vuppBound[n]){ 
-	        child.x_var[n] = ind0.x_var[n];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
+	  if(child[n]>vuppBound[n]){ 
+	        child[n] = ind0[n];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
 	  }
-	  if(child.x_var[n]<vlowBound[n]) child.x_var[n] = vlowBound[n];
-	  if(child.x_var[n]>vuppBound[n]) child.x_var[n] = vuppBound[n];
+	  if(child[n]<vlowBound[n]) child[n] = vlowBound[n];
+	  if(child[n]>vuppBound[n]) child[n] = vuppBound[n];
 	}
 }
-
-//diff_evo_xoverB
-void diff_evo_xoverB(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CIndividual &child, double rate)
-{
-	int idx_rnd = int(rnd_uni(&rnd_uni_init)*nvar);
-
-
-    double CR   =  (rnd_uni(&rnd_uni_init)<0.5)?0.2:1.0;
-	for(int n=0;n<nvar;n++)
-	{
-	  /*Selected Two Parents*/
-
-	  // strategy one 
-	  // child.x_var[n] = ind0.x_var[n] + rate*(ind2.x_var[n] - ind1.x_var[n]);
-	  
-	  //*
-	  // strategy two
-
-	  double rnd1 = rnd_uni(&rnd_uni_init);
-	  //double CR   = 1.0;
-	  if(rnd1<CR||n==idx_rnd)
-		  child.x_var[n] = ind0.x_var[n] + (rate)*(ind2.x_var[n] - ind1.x_var[n]);
-	  else
-		  child.x_var[n] = ind0.x_var[n];
-	  //*/
-
-	  // handle the boundary voilation
-	  if(child.x_var[n]<vlowBound[n]){
-	          double rnd = rnd_uni(&rnd_uni_init);
-//	          double rnd =-0.1+1.2*rnd_uni(&rnd_uni_init);
- 	       //child.x_var[n] = vlowBound[n] + rnd*(vuppBound[n] - vlowBound[n]);
- 	        child.x_var[n] = ind0.x_var[n];// vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
-	  }
-	  if(child.x_var[n]>vuppBound[n]){ 
-	          double rnd = rnd_uni(&rnd_uni_init);
-	          //double rnd =-0.1+1.2*rnd_uni(&rnd_uni_init);
- 	       // child.x_var[n] = vlowBound[n] + rnd*(vuppBound[n] - vlowBound[n]);
-	        child.x_var[n] = ind0.x_var[n];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
-	  }
-	  if(child.x_var[n]<vlowBound[n]) child.x_var[n] = vlowBound[n];
-	  if(child.x_var[n]>vuppBound[n]) child.x_var[n] = vuppBound[n];
-	}
-}
-void diff_evo_xover2B(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CIndividual &child, double rate, CIndividual &best)
-{
-	int idx_rnd = int(rnd_uni(&rnd_uni_init)*nvar);
-
-
-    double CR   =  (rnd_uni(&rnd_uni_init)<0.5)?0.2:1.0;
-	for(int n=0;n<nvar;n++)
-	{
-	  /*Selected Two Parents*/
-
-	  // strategy one 
-	  // child.x_var[n] = ind0.x_var[n] + rate*(ind2.x_var[n] - ind1.x_var[n]);
-	  
-	  //*
-	  // strategy two
-
-	  double rnd1 = rnd_uni(&rnd_uni_init);
-	  //double CR   = 1.0;
-	  if(rnd1<CR||n==idx_rnd)
-		  child.x_var[n] = ind0.x_var[n] + (rate)*0.5*(ind2.x_var[n] - ind1.x_var[n]) + rate*0.5*(ind0.x_var[n] - best.x_var[n]);
-	  else
-		  child.x_var[n] = ind0.x_var[n];
-	  //*/
-
-	  // handle the boundary voilation
-	  if(child.x_var[n]<vlowBound[n]){
-	          double rnd = rnd_uni(&rnd_uni_init);
-//	          double rnd =-0.1+1.2*rnd_uni(&rnd_uni_init);
- 	       //child.x_var[n] = vlowBound[n] + rnd*(vuppBound[n] - vlowBound[n]);
- 	        child.x_var[n] = ind0.x_var[n];// vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
-	  }
-	  if(child.x_var[n]>vuppBound[n]){ 
-	          double rnd = rnd_uni(&rnd_uni_init);
-	          //double rnd =-0.1+1.2*rnd_uni(&rnd_uni_init);
- 	       // child.x_var[n] = vlowBound[n] + rnd*(vuppBound[n] - vlowBound[n]);
-	        child.x_var[n] = ind0.x_var[n];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
-	  }
-	  if(child.x_var[n]<vlowBound[n]) child.x_var[n] = vlowBound[n];
-	  if(child.x_var[n]>vuppBound[n]) child.x_var[n] = vuppBound[n];
-	}
-}
-void diff_evo_xoverC(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, vector<double> &xdiff,  CIndividual &child,  double rate)
-{
-      double rnd = rnd_uni(&rnd_uni_init), rnd2 = rnd_uni(&rnd_uni_init);
-	  for(int n=0;n<nvar;n++)
-	  {
-		  /*Selected Two Parents*/
-		  
-		  if(rnd<1)
-		      child.x_var[n] = ind0.x_var[n] + rate*(ind2.x_var[n] - ind1.x_var[n]);
-		  else
-			  child.x_var[n] = ind0.x_var[n] + rnd2*xdiff[n];
-	
-		  if(child.x_var[n]<vlowBound[n]) child.x_var[n] = vlowBound[n];
-		  if(child.x_var[n]>vuppBound[n]) child.x_var[n] = vuppBound[n];
-	  }
-}
-
-
-
 #endif
