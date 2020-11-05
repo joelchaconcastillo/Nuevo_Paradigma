@@ -28,6 +28,7 @@ CIndividual::CIndividual()
 	x_var.assign(nInd, vector<double>(nvar, 0));
         y_obj.assign(nInd, vector<double>(nobj, 0));
 	fitness.assign(nInd, 0);
+
 }
 CIndividual::~CIndividual()
 {
@@ -44,9 +45,11 @@ void CIndividual::rnd_init()
 }
 void CIndividual::obj_eval()
 {
-        priority_queue< pair<double, int> > pq;
+	vector<int> v;
+	priority_queue<pair<double, int> > pq;
         for(int k = 0;k <nInd; k++)
 	{
+			v.push_back(k);
 	   if(!strcmp("UF1", strTestInstance))  CEC09_F1(y_obj[k], x_var[k]);
 	   if(!strcmp("UF2", strTestInstance))  CEC09_F2(y_obj[k], x_var[k]);
 	   if(!strcmp("UF3", strTestInstance))  CEC09_F3(y_obj[k], x_var[k]);
@@ -77,18 +80,20 @@ void CIndividual::obj_eval()
 	   if(!strcmp("DTLZ5", strTestInstance))  dtlz5(y_obj[k], x_var[k]);
 	   if(!strcmp("DTLZ6", strTestInstance))  dtlz6(y_obj[k], x_var[k]);
 	   if(!strcmp("DTLZ7", strTestInstance))  dtlz7(y_obj[k], x_var[k]);
-          pq.push(make_pair(-y_obj[k][0], k)); 
+//	   pq.push(make_pair(-y_obj[k][0], k));
         }
-        vector<vector<double> > y = y_obj, x=x_var;
-       int cc=0;
-       while(!pq.empty())
-       {
-	 int idx = pq.top().second;
-	 y_obj[cc] = y[idx];
-	 x_var[cc] = x[idx];
-	cc++;
-	 pq.pop();
-       }	
+
+	vector<vector<double> > x=x_var, y=y_obj;
+	random_shuffle(v.begin(), v.end());
+        for(int k = 0;k <nInd; k++)
+	{
+///		int v = pq.top().second;
+///		pq.pop();
+///		x_var[k] = x[v];
+///		y_obj[k] = y[v];
+	   x_var[k]=x[v[k]];
+	   y_obj[k]=y[v[k]];
+	}
 }
 void CIndividual::show_objective()
 {
@@ -148,7 +153,9 @@ bool operator<<(const vector<double> &y_obj1, const vector<double> &y_obj2)
 {
     for(int n=0; n< y_obj1.size(); n++)
     {
-        if(y_obj1[n]<y_obj2[n])
+//        if( fabs(y_obj1[n]-y_obj2[n]) < 10)
+//	 return true;
+	if(y_obj1[n]<y_obj2[n])
 	 return true; 
         else if(y_obj1[n]>y_obj2[n])
 	 return false;

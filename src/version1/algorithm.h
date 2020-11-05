@@ -127,18 +127,16 @@ void CMOEAD::evol_population()
       while(idx3 == idx2 || idx3 == idx1 || idx3 == idx_target) idx3=rand()%nPop;
       // produce a child solution
       CIndividual &child = pool[child_idx[i]];
-//      for(int k = 0; k < nInd; k++)
-      {
-	int k=rand()%nInd;
-         diff_evo_xoverA(pool[parent_idx[idx_target]].x_var[k], pool[parent_idx[idx1]].x_var[k], pool[parent_idx[idx2]].x_var[k], pool[parent_idx[idx3]].x_var[k], child.x_var[k], CR, F);
+      diff_evo_xoverA(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F);
       // apply polynomial mutation
-          realmutation(child.x_var[k], 1.0/(nvar));
-      }
+//      int k=rand()%nInd;
+//          realmutation(child.x_var[k], 1.0/(nvar));
       child.obj_eval();
       update_reference(child); //O(M)
       eval_R2(child);
      if(child.fitness < pool[parent_idx[idx_target]].fitness) pool[parent_idx[idx_target]] = child;
    }
+   getchar();
 }
 void CMOEAD::exec_emo(int run)
 {
@@ -186,6 +184,8 @@ void CMOEAD::save_front(char saveFilename[4024])
        {
           for(int k=0;k<nobj;k++)
              fout<<pool[parent_idx[n]].y_obj[i][k]<<"  ";
+          for(int k=0;k<nobj;k++)
+             fout<<pool[child_idx[n]].y_obj[i][k]<<"  ";
           fout<<"\n";
       }
     }
@@ -198,7 +198,6 @@ void CMOEAD::save_front(char saveFilename[4024])
 //          fout<<"\n";
 //      }
 //    }
-
     fout.close();
 }
 
@@ -388,7 +387,7 @@ void CMOEAD::eval_R2(CIndividual &indiv)
        {
            minv = min(minv, fitnessfunction(indiv.y_obj[k], namda[w]));
        } 
-       totalsum += minv;
+       totalsum += minv;//*(pow(100, r));
      }
 //	break;
   }
