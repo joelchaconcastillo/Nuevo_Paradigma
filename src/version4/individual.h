@@ -10,6 +10,7 @@ class CIndividual{
 
 	vector<vector<double> > x_var;
 	vector<vector<double> > y_obj;
+        vector<bool> modified;
 	int    count;
 
 	void   rnd_init();
@@ -27,8 +28,8 @@ CIndividual::CIndividual()
 {
 	x_var.assign(nInd, vector<double>(nvar, 0));
         y_obj.assign(nInd, vector<double>(nobj, 0));
+        modified.assign(nInd, false);
 	fitness.assign(nInd, 0);
-
 }
 CIndividual::~CIndividual()
 {
@@ -49,7 +50,8 @@ void CIndividual::obj_eval()
 	priority_queue<pair<double, int> > pq;
         for(int k = 0;k <nInd; k++)
 	{
-			v.push_back(k);
+	   v.push_back(k);
+	   if(!modified[k])continue;
 	   if(!strcmp("UF1", strTestInstance))  CEC09_F1(y_obj[k], x_var[k]);
 	   if(!strcmp("UF2", strTestInstance))  CEC09_F2(y_obj[k], x_var[k]);
 	   if(!strcmp("UF3", strTestInstance))  CEC09_F3(y_obj[k], x_var[k]);
@@ -82,8 +84,7 @@ void CIndividual::obj_eval()
 	   if(!strcmp("DTLZ7", strTestInstance))  dtlz7(y_obj[k], x_var[k]);
 //	   pq.push(make_pair(-y_obj[k][0], k));
         }
-
-	vector<vector<double> > x=x_var, y=y_obj;
+   vector<vector<double> > x=x_var, y=y_obj;
 	random_shuffle(v.begin(), v.end());
         for(int k = 0;k <nInd; k++)
 	{
@@ -113,6 +114,7 @@ void CIndividual::operator=(const CIndividual &ind2)
 	x_var = ind2.x_var;
 	y_obj = ind2.y_obj;
 	fitness = ind2.fitness;
+	modified = ind2.modified;
 }
 bool CIndividual::operator<(const CIndividual &ind2)
 {

@@ -157,10 +157,11 @@ void CMOEAD::evol_population()
       diff_evo_xoverA_exp(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F);
      // diff_evo_xoverA(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F);
   //        realmutation(child.x_var[rand()%nInd], 1.0/(nvar));
+
+      for(int k = 0; k < nInd; k++)
+         if(child.modified[k]) nfes++;
       child.obj_eval();
       update_reference(child); //O(M)
-   //   eval_R2(child);
-   //   eval_R2(pool[parent_idx[idx_target]]);
    }
    replacement_phase();
 }

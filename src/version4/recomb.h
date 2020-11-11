@@ -99,6 +99,7 @@ void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2
 	/*Loop over no of variables*/
 	int n = rand()%(nvar*nInd);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
 	child.x_var = ind0.x_var;
+	child.modified.assign(nInd, false);
 	int cont =0;
 	do{
          child.x_var[n/nvar][n%nvar] = ind1.x_var[n/nvar][n%nvar] + F*(ind2.x_var[n/nvar][n%nvar] - ind3.x_var[n/nvar][n%nvar]);
@@ -110,6 +111,7 @@ void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2
 	  if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vuppBound[n%nvar];
 	   n++;
 	   n %= (nvar*nInd);
+	   child.modified[n/nvar]=true;
 	   cont++;
 	}
         while(rnd_uni(&rnd_uni_init) < CR && cont < (nvar*nInd) );
