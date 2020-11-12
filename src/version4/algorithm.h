@@ -186,7 +186,6 @@ void CMOEAD::exec_emo(int run)
 	while(nfes<max_nfes)
 	{
 		update_parameterD();
-		evol_population();
 		accumulator += nfes - bef ;
                 if(accumulator > 0.1*(max_nfes)  )
 		{
@@ -195,7 +194,8 @@ void CMOEAD::exec_emo(int run)
 		   save_front(filename2);
 		}
 		bef=nfes;
-	        nfes += nOffspring*nInd;
+		evol_population();
+//	        nfes += nOffspring*nInd;
 	}
 	save_pos(filename1);
 	save_front(filename2);

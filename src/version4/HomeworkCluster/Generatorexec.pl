@@ -24,7 +24,7 @@ foreach my $Di(@DI)
    my $nOffspring = 10; 
    my $nind=10;
    my $max_nfes=25000000;
-   my $CR = 0.2;
+   my $CR = 0.9;
    my $F = 0.75;
    my $nWeights = 501;
    
