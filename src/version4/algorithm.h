@@ -36,7 +36,7 @@ class CMOEAD
    private:
         struct compare
         {
-	   bool operator()(const pair<vector<double>, int> &a, const pair<vector<double>, int> &b){return a.first<<b.first; }
+	   bool operator()(const pair<vector<double>, int> &a, const pair<vector<double>, int> &b){return b.first<<a.first; }
         };
 	vector <CIndividual> pool;
 	vector<int> child_idx, parent_idx, inv_parent_idx;
@@ -125,7 +125,7 @@ void CMOEAD::init_population()
 		}
 		else
 		   child_idx.push_back(i);
-		nfes++;
+		nfes +=nInd;
      }
      readf.close();
 }
@@ -151,16 +151,17 @@ void CMOEAD::evol_population()
       while(idx1 == idx_target) idx1=rand()%nPop;
       while(idx2 == idx1 || idx2 == idx_target) idx2=rand()%nPop;
       while(idx3 == idx2 || idx3 == idx1 || idx3 == idx_target) idx3=rand()%nPop;
+	vector<bool> changed(nInd, false);
       // produce a child solution
       CIndividual &child = pool[child_idx[i]];
    //   diff_evo_xoverA_knn(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F);
-      diff_evo_xoverA_exp(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F);
+      diff_evo_xoverA_exp(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F, changed);
      // diff_evo_xoverA(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F);
   //        realmutation(child.x_var[rand()%nInd], 1.0/(nvar));
 
       for(int k = 0; k < nInd; k++)
-         if(child.modified[k]) nfes++;
-      child.obj_eval();
+         if(changed[k]) nfes++;
+      child.obj_eval(changed);
       update_reference(child); //O(M)
    }
    replacement_phase();
@@ -247,11 +248,11 @@ void CMOEAD::save_pos(char saveFilename[4024])
 void CMOEAD::replacement_phase()
 {
   unordered_set<int> penalized, survivors;
-  priority_queue<pair<double, int>> candidates;
+  priority_queue<pair<vector<double>, int>, vector<pair<vector<double>, int>>, compare> candidates;
   for(int i = 0; i < pool.size(); i++)
   {
     eval_R2(pool[i]);
-    candidates.push(make_pair(-pool[i].fitness[0], i));
+    candidates.push(make_pair(pool[i].fitness, i));
   }
   while(!candidates.empty() && survivors.size() < nPop)
   {
@@ -293,7 +294,6 @@ void CMOEAD::eval_R2(CIndividual &indiv)
   //adding earch rank...
   for(int r = 0; r < fronts.size(); r++)
   {
-     double totalsum = 0.0; 
      for(int w = 0; w < nWeight; w++)
      {
        double minv = DBL_MAX;

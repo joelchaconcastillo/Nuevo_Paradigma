@@ -93,13 +93,35 @@ void diff_evo_xoverA(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CI
 	  if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vuppBound[n%nvar];
 	}
 }
+void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CIndividual &ind3, CIndividual &child, double CR, double F, vector<bool> &changed)
+{
+	// Check Whether the cross-over to be performed
+	/*Loop over no of variables*/
+	int n = rand()%(nvar*nInd);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
+	child.x_var= ind0.x_var;
+	child.y_obj= ind0.y_obj;
+	int cont =0;
+	do{
+         child.x_var[n/nvar][n%nvar] = ind1.x_var[n/nvar][n%nvar] + F*(ind2.x_var[n/nvar][n%nvar] - ind3.x_var[n/nvar][n%nvar]);
+	  if(child.x_var[n/nvar][n%nvar]<vlowBound[n%nvar])
+ 	       child.x_var[n/nvar][n%nvar] = ind0.x_var[n/nvar][n%nvar];//vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
+	  if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar])
+	        child.x_var[n/nvar][n%nvar] = ind0.x_var[n/nvar][n%nvar];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
+	  if(child.x_var[n/nvar][n%nvar]<vlowBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vlowBound[n%nvar];
+	  if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vuppBound[n%nvar];
+	   changed[n/nvar]=true;
+	   n++;
+	   n %= (nvar*nInd);
+	   cont++;
+	}
+        while(rnd_uni(&rnd_uni_init) < CR && cont < (nvar*nInd) );
+}
 void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CIndividual &ind3, CIndividual &child, double CR, double F)
 {
 	// Check Whether the cross-over to be performed
 	/*Loop over no of variables*/
 	int n = rand()%(nvar*nInd);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
 	child.x_var = ind0.x_var;
-	child.modified.assign(nInd, false);
 	int cont =0;
 	do{
          child.x_var[n/nvar][n%nvar] = ind1.x_var[n/nvar][n%nvar] + F*(ind2.x_var[n/nvar][n%nvar] - ind3.x_var[n/nvar][n%nvar]);
@@ -111,7 +133,6 @@ void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2
 	  if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vuppBound[n%nvar];
 	   n++;
 	   n %= (nvar*nInd);
-	   child.modified[n/nvar]=true;
 	   cont++;
 	}
         while(rnd_uni(&rnd_uni_init) < CR && cont < (nvar*nInd) );

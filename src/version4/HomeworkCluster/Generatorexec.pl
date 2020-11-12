@@ -24,11 +24,13 @@ foreach my $Di(@DI)
    my $nOffspring = 10; 
    my $nind=10;
    my $max_nfes=25000000;
-   my $CR = 0.9;
+#   my $CR = 0.9;
    my $F = 0.75;
    my $nWeights = 501;
-   
+ foreach my $CR(("0.0", "0.1", "0.9"))   
+ {
    my @Instance = ("DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4", "DTLZ5", "DTLZ6", "DTLZ7");
+
          foreach(@Instance)
          {
          	my $nvar;
@@ -102,4 +104,5 @@ foreach my $Di(@DI)
 	       	   	print $fout "~$PathAlgorithm/Ejecutable $PathAlgorithm $_ $Sed $nobj $nind $pops $nWeights $nOffspring $max_nfes $CR $F $nvar $Di $Df\n";
 	       	   }
 	       }
+       }
 }
