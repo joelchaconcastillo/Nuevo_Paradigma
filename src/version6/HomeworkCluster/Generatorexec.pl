@@ -15,7 +15,7 @@ my $PathAlgorithm = $Path;
 #for(my $Df=0.1; $Df <= 0.9; $Df+=0.2)
 #{
 #my @Instance = ("DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4", "DTLZ5", "DTLZ6", "DTLZ7");
-my @DI = ("0.05");#, "0.2", "0.4", "0.6", "0.8", "1.0");
+my @DI = ("0.01");#, "0.2", "0.4", "0.6", "0.8", "1.0");
 foreach my $Di(@DI)
 {
 	#   my $Di = 0.4;
