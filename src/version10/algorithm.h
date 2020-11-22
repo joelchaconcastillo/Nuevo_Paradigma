@@ -124,6 +124,7 @@ void CMOEAD::init_population()
 		   child_idx.push_back(i);
 		nfes +=nInd;
      }
+     update_external_file();
      readf.close();
 }
 void CMOEAD::update_reference(CIndividual &ind)
@@ -157,7 +158,10 @@ void CMOEAD::evol_population()
   //        realmutation(child.x_var[rand()%nInd], 1.0/(nvar));
 
       for(int k = 0; k < nInd; k++)
+      {
          if(changed[k]) nfes++;
+         realmutation(child.x_var[k], 1.0/(nvar));
+      }
       child.obj_eval(changed);
       update_reference(child); //O(M)
    }
