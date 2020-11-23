@@ -15,7 +15,7 @@ my $PathAlgorithm = $Path;
 #for(my $Df=0.1; $Df <= 0.9; $Df+=0.2)
 #{
 #my @Instance = ("DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4", "DTLZ5", "DTLZ6", "DTLZ7");
-my @DI = ("0.1");#, "0.2", "0.4", "0.6", "0.8", "1.0");
+my @DI = ("0.4");#, "0.2", "0.4", "0.6", "0.8", "1.0");
 foreach my $Di(@DI)
 {
 	#   my $Di = 0.4;
@@ -27,7 +27,7 @@ foreach my $Di(@DI)
 #   my $CR = 0.9;
    my $F = 0.75;
    my $nWeights = 501;
- foreach my $CR(("0.0", "0.1", "0.9"))   
+ foreach my $CR(("0.0"))   
  {
    my @Instance = ("DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4", "DTLZ5", "DTLZ6", "DTLZ7");
 
@@ -35,7 +35,7 @@ foreach my $Di(@DI)
          {
          	my $nvar;
          	
-         	for(my $nobj = 2; $nobj <=3; $nobj++)
+         	for(my $nobj = 2; $nobj <=2; $nobj++)
          	{
 		  if( $nobj eq 2) { $nWeights =501; }
 		  if( $nobj eq 3) { $nWeights =496; }
@@ -64,7 +64,7 @@ foreach my $Di(@DI)
          {
          	my $nvar;
          	
-         	for(my $nobj = 2; $nobj <=3; $nobj++)
+         	for(my $nobj = 2; $nobj <=2; $nobj++)
          	{
          	   my $k =4;# 2*($nobj-1);
          	   my $l =20;# 24-$k;
@@ -91,18 +91,18 @@ foreach my $Di(@DI)
 	 	       	   }
 	 	       }
 	    
-	    @Instance = ("UF8", "UF9", "UF10");
-	    $nobj=3;
-	       foreach(@Instance)
-	       {
-	       	   my $nvar=30;
-	          if( $nobj eq 2) { $nWeights =501; }
-		  if( $nobj eq 3) { $nWeights =496; }
-
-	       	   for(my $Sed = 1; $Sed <=35; $Sed++) ##Realizar 35 ejecuciones con distintas semilla de cada instancia..
-	       	   {
-	       	   	print $fout "~$PathAlgorithm/Ejecutable $PathAlgorithm $_ $Sed $nobj $nind $pops $nWeights $nOffspring $max_nfes $CR $F $nvar $Di $Df\n";
-	       	   }
-	       }
+		       #	    @Instance = ("UF8", "UF9", "UF10");
+		       #	    $nobj=3;
+		       #	       foreach(@Instance)
+		       #	       {
+		       #	       	   my $nvar=30;
+		       #	          if( $nobj eq 2) { $nWeights =501; }
+		       #		  if( $nobj eq 3) { $nWeights =496; }
+		       #
+		       #	       	   for(my $Sed = 1; $Sed <=35; $Sed++) ##Realizar 35 ejecuciones con distintas semilla de cada instancia..
+		       #	       	   {
+		       #	       	   	print $fout "~$PathAlgorithm/Ejecutable $PathAlgorithm $_ $Sed $nobj $nind $pops $nWeights $nOffspring $max_nfes $CR $F $nvar $Di $Df\n";
+		       #	       	   }
+		       #	       }
        }
 }
