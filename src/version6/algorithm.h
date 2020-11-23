@@ -61,7 +61,6 @@ void CMOEAD::update_parameterD()
       double TElapsed = nfes, TEnd = max_nfes;
       D = Di - Di * (TElapsed / (TEnd*Df));
       D = max(D, 0.0);
-      D = 0.0;
 }
 double CMOEAD::distance_var(int a, int b)
 {
