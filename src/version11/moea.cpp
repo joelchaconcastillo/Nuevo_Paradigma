@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         param_k = param_k - (int)(( nvar - param_k)%2);
         param_l = nvar-param_k;
 
-	Di = sqrt(nvar)*atof(argv[index++]);
+	Di = sqrt(nvar*nInd)*atof(argv[index++]);
 	Df = atof(argv[index++]);
 
 

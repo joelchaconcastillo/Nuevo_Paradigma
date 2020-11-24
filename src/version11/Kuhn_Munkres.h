@@ -155,10 +155,11 @@ void KuhnMunkres(vector<int> &assignament, vector<vector<double> > &costs)
         step_6(costs, covered_astrid);
      }
   }
-//  print(costs, covered_astrid, state);
 /////////////////////////////////////////////////////////////////////////
  for(int i = 0; i < N; i++)
    for(int j = 0; j < N; j++)
       if(state[i][j] == ASTRID) assignament[i] = j;
+	
+//  print(costs, covered_astrid, state);
 }
 #endif

@@ -96,11 +96,10 @@ void CIndividual::obj_eval()
 }
 void CIndividual::obj_eval(vector<bool> &changed)
 {
-	vector<int> v;
-//	priority_queue<pair<double, int> > pq;
+//	vector<int> v;
         for(int k = 0;k <nInd; k++)
 	{
-	   v.push_back(k);
+//	   v.push_back(k);
 	   if(!changed[k]) continue;
 	   if(!strcmp("UF1", strTestInstance))  CEC09_F1(y_obj[k], x_var[k]);
 	   if(!strcmp("UF2", strTestInstance))  CEC09_F2(y_obj[k], x_var[k]);
@@ -134,17 +133,17 @@ void CIndividual::obj_eval(vector<bool> &changed)
 	   if(!strcmp("DTLZ7", strTestInstance))  dtlz7(y_obj[k], x_var[k]);
 //	   pq.push(make_pair(-y_obj[k][0], k));
         }
-   vector<vector<double> > x=x_var, y=y_obj;
-	random_shuffle(v.begin(), v.end());
-        for(int k = 0;k <nInd; k++)
-	{
-///		int v = pq.top().second;
-///		pq.pop();
-///		x_var[k] = x[v];
-///		y_obj[k] = y[v];
-	   x_var[k]=x[v[k]];
-	   y_obj[k]=y[v[k]];
-	}
+//   vector<vector<double> > x=x_var, y=y_obj;
+////	random_shuffle(v.begin(), v.end());
+//        for(int k = 0;k <nInd; k++)
+//	{
+/////		int v = pq.top().second;
+/////		pq.pop();
+/////		x_var[k] = x[v];
+/////		y_obj[k] = y[v];
+//	   x_var[k]=x[v[k]];
+//	   y_obj[k]=y[v[k]];
+//	}
 }
 void CIndividual::show_objective()
 {

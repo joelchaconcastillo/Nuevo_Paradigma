@@ -53,7 +53,7 @@ double distance_obj(vector<double> &a, vector<double> &b)
 {
    double dist =0.0;
    for(int i = 0; i < a.size(); i++)
-     dist += (a[i]-b[i])*(a[i]-b[i]);
+     dist += ((a[i]-b[i])*(a[i]-b[i]));
    return dist;
 }
 #endif
