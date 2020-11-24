@@ -15,7 +15,7 @@ my $PathAlgorithm = $Path;
 #for(my $Df=0.1; $Df <= 0.9; $Df+=0.2)
 #{
 #my @Instance = ("DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4", "DTLZ5", "DTLZ6", "DTLZ7");
-my @DI = ("0.6");#, "0.2", "0.4", "0.6", "0.8", "1.0");
+my @DI = ("0.4");#, "0.2", "0.4", "0.6", "0.8", "1.0");
 foreach my $Di(@DI)
 {
 	#   my $Di = 0.4;
@@ -58,7 +58,7 @@ foreach my $Di(@DI)
    #         	   }
    #         	}
    #         }
-   @Instance = ("WFG1", "WFG5", "WFG6", "WFG8", "WFG9");
+   @Instance = ("WFG1");#, "WFG5", "WFG6", "WFG8", "WFG9");
    #   @Instance = ("WFG8");
          foreach(@Instance)
          {
@@ -79,31 +79,31 @@ foreach my $Di(@DI)
          	}
          }
 	 #@Instance = ("UF1", "UF2", "UF3", "UF4", "UF5", "UF6", "UF7");
-	     @Instance = ("UF4", "UF5", "UF6", "UF7");
-	           my $nobj=2;
-	 	       foreach(@Instance)
-	 	       {
-	 	       	   my $nvar=30;
-	 	       	   for(my $Sed = 1; $Sed <=35; $Sed++) ##Realizar 35 ejecuciones con distintas semilla de cada instancia..
-	 	       	   {
-	 		  if( $nobj eq 2) { $nWeights =501; }
-	 		  if( $nobj eq 3) { $nWeights =496; }
-	 	       	   	print $fout "~$PathAlgorithm/Ejecutable $PathAlgorithm $_ $Sed $nobj $nind $pops $nWeights $nOffspring $max_nfes $CR $F $nvar $Di $Df\n";
-	 	       	   }
-	 	       }
-	    
-		       #	    @Instance = ("UF8", "UF9", "UF10");
-		       #	    $nobj=3;
-		       #	       foreach(@Instance)
-		       #	       {
-		       #	       	   my $nvar=30;
-		       #	          if( $nobj eq 2) { $nWeights =501; }
-		       #		  if( $nobj eq 3) { $nWeights =496; }
-		       #
-		       #	       	   for(my $Sed = 1; $Sed <=35; $Sed++) ##Realizar 35 ejecuciones con distintas semilla de cada instancia..
-		       #	       	   {
-		       #	       	   	print $fout "~$PathAlgorithm/Ejecutable $PathAlgorithm $_ $Sed $nobj $nind $pops $nWeights $nOffspring $max_nfes $CR $F $nvar $Di $Df\n";
-		       #	       	   }
-		       #	       }
+	 #	     @Instance = ("UF4", "UF5", "UF6", "UF7");
+	 #	           my $nobj=2;
+	 #	 	       foreach(@Instance)
+	 #	 	       {
+	 #	 	       	   my $nvar=30;
+	 #	 	       	   for(my $Sed = 1; $Sed <=35; $Sed++) ##Realizar 35 ejecuciones con distintas semilla de cada instancia..
+	 #	 	       	   {
+	 #	 		  if( $nobj eq 2) { $nWeights =501; }
+	 #	 		  if( $nobj eq 3) { $nWeights =496; }
+	 #	 	       	   	print $fout "~$PathAlgorithm/Ejecutable $PathAlgorithm $_ $Sed $nobj $nind $pops $nWeights $nOffspring $max_nfes $CR $F $nvar $Di $Df\n";
+	 #	 	       	   }
+	 #	 	       }
+	 #	    
+	 #		       #	    @Instance = ("UF8", "UF9", "UF10");
+	 #		       #	    $nobj=3;
+	 #		       #	       foreach(@Instance)
+	 #		       #	       {
+	 #		       #	       	   my $nvar=30;
+	 #		       #	          if( $nobj eq 2) { $nWeights =501; }
+	 #		       #		  if( $nobj eq 3) { $nWeights =496; }
+	 #		       #
+	 #		       #	       	   for(my $Sed = 1; $Sed <=35; $Sed++) ##Realizar 35 ejecuciones con distintas semilla de cada instancia..
+	 #		       #	       	   {
+	 #		       #	       	   	print $fout "~$PathAlgorithm/Ejecutable $PathAlgorithm $_ $Sed $nobj $nind $pops $nWeights $nOffspring $max_nfes $CR $F $nvar $Di $Df\n";
+	 #		       #	       	   }
+	 #		       #	       }
        }
 }
