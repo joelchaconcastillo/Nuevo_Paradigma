@@ -167,8 +167,8 @@ void CMOEAD::evol_population()
       {
          if(changed[k])
          {
-	   nfes++;
            realmutation(child.x_var[k], 1.0/(nvar));
+	   nfes++;
 	 }
       }
       child.obj_eval(changed);

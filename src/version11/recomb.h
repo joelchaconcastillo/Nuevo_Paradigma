@@ -117,10 +117,15 @@ void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2
 	     }
           }
         } 
-        KuhnMunkres(asg_1, dist_matrix_1);
-        KuhnMunkres(asg_2, dist_matrix_2);
-        KuhnMunkres(asg_3, dist_matrix_3);
-
+	for(int i = 0; i < nInd; i++)
+	{
+	   asg_1[i]=i;
+	   asg_2[i]=i;
+	   asg_3[i]=i;
+	}
+//        KuhnMunkres(asg_1, dist_matrix_1);
+//        KuhnMunkres(asg_2, dist_matrix_2);
+//        KuhnMunkres(asg_3, dist_matrix_3);
 	int cont =0;
 	do{
          child.x_var[n/nvar][n%nvar] = ind1.x_var[asg_1[n/nvar]][n%nvar] + F*(ind2.x_var[asg_2[n/nvar]][n%nvar] - ind3.x_var[asg_3[n/nvar]][n%nvar]);
