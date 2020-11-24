@@ -97,7 +97,6 @@ void CIndividual::obj_eval()
 void CIndividual::obj_eval(vector<bool> &changed)
 {
 //	vector<int> v;
-	priority_queue<pair<double, int> > pq;
         for(int k = 0;k <nInd; k++)
 	{
 //	   v.push_back(k);

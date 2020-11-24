@@ -108,13 +108,9 @@ void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2
         {
           for(int j = i; j < nInd; j++)
           {
-    	    if(i==j) dist_matrix_1[i][j]=dist_matrix_2[i][j]= dist_matrix_3[i][j]=DBL_MAX;
-    	     else
-	     {
 	         dist_matrix_1[j][i] = dist_matrix_1[i][j] = distance_obj(ind0.y_obj[i], ind1.y_obj[j]);
 	         dist_matrix_2[j][i] = dist_matrix_2[i][j] = distance_obj(ind0.y_obj[i], ind2.y_obj[j]);
 	         dist_matrix_3[j][i] = dist_matrix_3[i][j] = distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
-	     }
           }
         } 
         KuhnMunkres(asg_1, dist_matrix_1);

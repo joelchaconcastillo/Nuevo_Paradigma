@@ -68,14 +68,10 @@ double CMOEAD::distance_var(int a, int b)
 {
 ///distance matrix..
     for(int i = 0; i < nInd; i++)
-    {
       for(int j = 0; j < nInd; j++)
-      {
-	if(i==j) dist_matrix[i][j]=DBL_MAX;
-	else dist_matrix[i][j] = distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
-      }
-    }
+	dist_matrix[i][j] = distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
     KuhnMunkres(assignaments, dist_matrix);
+//////////////////////
    double dist = 0 ;
    for(int i = 0; i < nInd; i++)
    {
@@ -182,6 +178,7 @@ void CMOEAD::evol_population()
  
   if(R2_pop.size() >= 200) 
    update_external_file(R2_pop);
+
    replacement_phase();
 }
 void CMOEAD::exec_emo(int run)
