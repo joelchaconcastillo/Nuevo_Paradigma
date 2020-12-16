@@ -15,14 +15,14 @@ void realmutation(vector<double> &ind, double rate)
 
     for (int j=0; j<nvar; j++)
     {
-        if (rnd_uni(&rnd_uni_init)<=rate)
+        if (rnd_uni<=rate)
         {
             y  = ind[j];
             yl = vlowBound[j];
             yu = vuppBound[j];
             delta1 = (y-yl)/(yu-yl);
             delta2 = (yu-y)/(yu-yl);
-            rnd = rnd_uni(&rnd_uni_init);
+            rnd = rnd_uni;
             mut_pow = 1.0/(eta_m+1.0);
             if (rnd <= 0.5)
             {
@@ -46,51 +46,39 @@ void realmutation(vector<double> &ind, double rate)
     }
     return;
 }
-
-void diff_evo_xoverA(vector<double> &ind0, vector<double> &ind1, vector<double> &ind2, vector<double> &ind3, vector<double> &child, double CR, double F)
+void diff_evo_xoverA(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CIndividual &ind3, CIndividual &child, double CR, double F, vector<bool> &changed)
 {
-	// Check Whether the cross-over to be performed
-	/*Loop over no of variables*/
-	int idx_rnd = rand()%(nvar);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
-	for(int n=0;n<nvar;n++)
-	{
-	  double rnd = rnd_uni(&rnd_uni_init);
-	  if(rnd<CR||n==idx_rnd)
-		  child[n] = ind1[n] + F*(ind2[n] - ind3[n]);
-	  else
-		  child[n] = ind0[n];
-
-	  if(child[n]<vlowBound[n]){
- 	       child[n] = ind0[n];//vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
-	  }
-	  if(child[n]>vuppBound[n]){ 
-	        child[n] = ind0[n];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
-	  }
-	  if(child[n]<vlowBound[n]) child[n] = vlowBound[n];
-	  if(child[n]>vuppBound[n]) child[n] = vuppBound[n];
-	}
-}
-void diff_evo_xoverA(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CIndividual &ind3, CIndividual &child, double CR, double F)
-{
+	child.x_var= ind0.x_var;
+	child.y_obj= ind0.y_obj;
 	// Check Whether the cross-over to be performed
 	/*Loop over no of variables*/
 	int idx_rnd = rand()%(nvar*nInd);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
-
-	for(int n=0;n<nvar*nInd;n++)
+        for(int i = 0; i < nInd; i++)
+        {
+          for(int j = 0; j < nInd; j++)
+          {
+	         cost_1[i][j] = -distance_obj(ind0.y_obj[i], ind1.y_obj[j]);
+	         cost_2[i][j] = -distance_obj(ind0.y_obj[i], ind2.y_obj[j]);
+	         cost_3[i][j] = -distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
+          }
+        } 
+        hungarian(cost_1, asg_1);
+        hungarian(cost_2, asg_2);
+        hungarian(cost_3, asg_3);
+	for(int n=0;n<nvar*nInd; n++)
 	{
-	  double rnd = rnd_uni(&rnd_uni_init);
+	  double rnd = rnd_uni;
 	  if(rnd<CR||n==idx_rnd)
-		  child.x_var[n/nvar][n%nvar] = ind1.x_var[n/nvar][n%nvar] + F*(ind2.x_var[n/nvar][n%nvar] - ind3.x_var[n/nvar][n%nvar]);
-	  else
-		  child.x_var[n/nvar][n%nvar] = ind0.x_var[n/nvar][n%nvar];
-	  if(child.x_var[n/nvar][n%nvar]<vlowBound[n%nvar]){
- 	       child.x_var[n/nvar][n%nvar] = ind0.x_var[n/nvar][n%nvar];//vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
+	  {
+              child.x_var[n/nvar][n%nvar] = ind1.x_var[asg_1[n/nvar]][n%nvar] + F*(ind2.x_var[asg_2[n/nvar]][n%nvar] - ind3.x_var[asg_3[n/nvar]][n%nvar]);
+	      if(child.x_var[n/nvar][n%nvar]<vlowBound[n%nvar])
+ 	           child.x_var[n/nvar][n%nvar] = ind0.x_var[n/nvar][n%nvar];//vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
+	      if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar])
+	            child.x_var[n/nvar][n%nvar] = ind0.x_var[n/nvar][n%nvar];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
+	      if(child.x_var[n/nvar][n%nvar]<vlowBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vlowBound[n%nvar];
+	      if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vuppBound[n%nvar];
+	       changed[n/nvar]=true;
 	  }
-	  if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar]){ 
-	        child.x_var[n/nvar][n%nvar] = ind0.x_var[n/nvar][n%nvar];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
-	  }
-	  if(child.x_var[n/nvar][n%nvar]<vlowBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vlowBound[n%nvar];
-	  if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vuppBound[n%nvar];
 	}
 }
 void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CIndividual &ind3, CIndividual &child, double CR, double F, vector<bool> &changed)
@@ -100,22 +88,18 @@ void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2
 	int n = rand()%(nvar*nInd);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
 	child.x_var= ind0.x_var;
 	child.y_obj= ind0.y_obj;
-        vector<int> asg_1(nInd), asg_2(nInd), asg_3(nInd);
-	vector<vector<double> > dist_matrix_1(nInd, vector<double> (nInd)), dist_matrix_2(nInd, vector<double> (nInd)), dist_matrix_3(nInd, vector<double> (nInd));
-
-
         for(int i = 0; i < nInd; i++)
         {
           for(int j = 0; j < nInd; j++)
           {
-	         dist_matrix_1[i][j] =  distance_obj(ind0.y_obj[i], ind1.y_obj[j]);
-	         dist_matrix_2[i][j] =  distance_obj(ind0.y_obj[i], ind2.y_obj[j]);
-	         dist_matrix_3[i][j] =  distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
+	         cost_1[i][j] = -distance_obj(ind0.y_obj[i], ind1.y_obj[j]);
+	         cost_2[i][j] = -distance_obj(ind0.y_obj[i], ind2.y_obj[j]);
+	         cost_3[i][j] = -distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
           }
         } 
-        KuhnMunkres(asg_1, dist_matrix_1);
-        KuhnMunkres(asg_2, dist_matrix_2);
-        KuhnMunkres(asg_3, dist_matrix_3);
+        hungarian(cost_1, asg_1);
+        hungarian(cost_2, asg_2);
+        hungarian(cost_3, asg_3);
 
 	int cont =0;
 	do{
@@ -131,46 +115,6 @@ void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2
 	   n %= (nvar*nInd);
 	   cont++;
 	}
-        while(rnd_uni(&rnd_uni_init) < CR && cont < (nvar*nInd) );
-}
-void diff_evo_xoverA_knn(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CIndividual &ind3, CIndividual &child, double CR, double F)
-{
-       vector<int> s1(nInd),s2(nInd),s3(nInd);
-       for(int k = 0; k < nInd; k++)
-       {
-	       vector<pair<double, int> > mind(3, make_pair(DBL_MAX, -1));
-	   for(int i = 0; i < nInd; i++)
-	   {
-		   if(mind[0].first > distance_obj(ind0.y_obj[k], ind1.y_obj[i])) mind[0]=make_pair( distance_obj(ind0.y_obj[k], ind1.y_obj[i]), i);
-		   if(mind[1].first > distance_obj(ind0.y_obj[k], ind2.y_obj[i])) mind[1]=make_pair( distance_obj(ind0.y_obj[k], ind2.y_obj[i]), i);
-		   if(mind[2].first > distance_obj(ind0.y_obj[k], ind3.y_obj[i])) mind[2]=make_pair( distance_obj(ind0.y_obj[k], ind3.y_obj[i]), i);
-	   }
-	  // random_shuffle(mind.begin(), mind.end());
-       s1[k]=mind[0].second;
-       s2[k]=mind[1].second;
-       s3[k]=mind[2].second;
-
-       } 
-
-	// Check Whether the cross-over to be performed
-	/*Loop over no of variables*/
-	int idx_rnd = rand()%(nvar*nInd);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);
-
-	for(int n=0;n<nvar*nInd;n++)
-	{
-	  double rnd = rnd_uni(&rnd_uni_init);
-	  if(rnd<CR||n==idx_rnd)
-		  child.x_var[n/nvar][n%nvar] = ind1.x_var[s1[n/nvar]][n%nvar] + F*(ind2.x_var[s2[n/nvar]][n%nvar] - ind3.x_var[s3[n/nvar]][n%nvar]);
-	  else
-		  child.x_var[n/nvar][n%nvar] = ind0.x_var[n/nvar][n%nvar];
-	  if(child.x_var[n/nvar][n%nvar]<vlowBound[n%nvar]){
- 	       child.x_var[n/nvar][n%nvar] = ind0.x_var[n/nvar][n%nvar];//vlowBound[n] + rnd*(ind0.x_var[n] - vlowBound[n]);
-	  }
-	  if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar]){ 
-	        child.x_var[n/nvar][n%nvar] = ind0.x_var[n/nvar][n%nvar];//vuppBound[n] - rnd*(vuppBound[n] - ind0.x_var[n]);
-	  }
-	  if(child.x_var[n/nvar][n%nvar]<vlowBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vlowBound[n%nvar];
-	  if(child.x_var[n/nvar][n%nvar]>vuppBound[n%nvar]) child.x_var[n/nvar][n%nvar] = vuppBound[n%nvar];
-	}
+        while(rnd_uni < CR && cont < (nvar*nInd) );
 }
 #endif

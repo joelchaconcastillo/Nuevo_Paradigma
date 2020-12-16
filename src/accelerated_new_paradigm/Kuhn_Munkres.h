@@ -1,165 +1,63 @@
 #ifndef KUHN_MUNKRES
 #define KUHN_MUNKRES
-#define EPSILON 1e-4
-#define ASTRID 0
-#define PRIME 1
-#define NONE 2
-#define ROW_COVERED 0
-#define COL_COVERED 1
 using namespace std;
-void print(vector< vector<double> > &costs, vector< vector< bool> > &covered_astrid, vector<vector<int> > &state)
-{
-  int  N = costs.size();
-  cout << " ";
-  for(int j = 0; j < N; j++) if(covered_astrid[COL_COVERED][j]) cout << "#";else cout <<" ";
-  cout <<endl;
-  for(int i =0; i < N ; i++)
-  {
-    if(covered_astrid[ROW_COVERED][i]) cout << "#"; else cout <<" ";
-    for(int j = 0; j < N; j++)
-    {
-	cout << costs[i][j];
-	if(state[i][j]==ASTRID) cout << "*";
-	else if(state[i][j]==PRIME) cout << "'";
-	else cout << " ";
-    } 
-    cout <<endl;
-  }
+const double EPS = 1e-9;
+const double INF = 1e14;
+//Dado un grafo bipartito completo con costos no negativos, encuentra el matching perfecto de minimo costo.
+double lx[MAX_VAR], ly[MAX_VAR], slack[MAX_VAR]; //llenar: cost=matriz de adyacencia
+int n, max_match, xy[MAX_VAR], yx[MAX_VAR], slackx[MAX_VAR],prev2[MAX_VAR];//n=cantidad de nodos
+bool S[MAX_VAR], T[MAX_VAR]; //sets S and T in algorithm
+void add_to_tree(int x, int prevx, double cost[][MAX_VAR]) {
+	S[x] = true, prev2[x] = prevx; 
+	for(int y=0; y < n; y++) if (lx[x] + ly[y] - cost[x][y] < slack[y] - EPS)
+		slack[y] = lx[x] + ly[y] - cost[x][y], slackx[y] = x;
 }
-void step_1_2(vector<vector<double> > &costs, vector<vector<int> > &state)
-{
-  int N = costs.size();
-  vector< vector< bool> > covered_astrid(2, vector<bool> (N, false));
-  //steps one and two..
-  for(int i = 0; i < N ; i++)
-  {
-    double minv =DBL_MAX ;
-    for(int j = 0; j < N; j++) minv = min(minv, costs[i][j]);
-    for(int j = 0; j < N; j++)
-    {
-       costs[i][j] -=minv;
-      if(fabs(costs[i][j]) < EPSILON && !covered_astrid[ROW_COVERED][i] && !covered_astrid[COL_COVERED][j])
-      state[i][j]=ASTRID, covered_astrid[ROW_COVERED][i]=true, covered_astrid[COL_COVERED][j]=true;
-    }
-  }
+void update_labels(){
+	double delta = INF; 
+	for(int y = 0; y < n; y++) if (!T[y]) delta = std::min(delta, slack[y]);
+	for(int x = 0 ; x < n; x++) if (S[x]) lx[x] -= delta;
+	for(int y = 0; y < n; y++) if (T[y]) ly[y] += delta; else slack[y] -= delta;
 }
-int step_3(vector< vector< bool> > &covered_astrid, vector< vector<int> > &state)
-{
-  int N = state.size();
-  int count_cols = 0;
-  for(int i = 0; i < N ; i++)//cols..
-  {
-    if(covered_astrid[COL_COVERED][i]){count_cols++; continue;}
-    for(int j = 0; j < N; j++)//rows..
-    {
-       if(state[j][i] == ASTRID)
-       {
-        covered_astrid[COL_COVERED][i] = true;
-	count_cols++;
-	break; //go to the next column
-       }
-    }
-  }
-  return count_cols;
+void init_labels(double cost[][MAX_VAR]){
+        memset(lx, 0, sizeof lx);
+        memset(ly, 0, sizeof ly);
+	for(int x = 0; x < n; x++) for(int y = 0; y < n; y++) lx[x] = std::max(lx[x], cost[x][y]);
 }
-int step_4(pair<int, int> &rc, vector<vector<double> > &costs, vector<vector<int> > &state, vector< vector< bool> > &covered_astrid)
-{
-
-  int N = costs.size();
-  for(int i = 0; i < N && rc.first == -1; i++) //find an uncovered zero entry
-  {
-      if(!covered_astrid[ROW_COVERED][i])
-      for(int j = 0; j < N && rc.second == -1; j++)
-        if( !covered_astrid[COL_COVERED][j] &&fabs(costs[i][j]) < EPSILON) rc = make_pair(i, j);
-  }
-  if( rc.first != -1)
-  {
-   state[rc.first][rc.second] = PRIME;
-    for(int k=0; k < N; k++)
-      if(state[rc.first][k] == ASTRID)
-      {
-	covered_astrid[ROW_COVERED][rc.first]=true, covered_astrid[COL_COVERED][k]=false; 
-	return 4;
-      }
-    return 5;
-   }
-  return 6;
+void augment(double cost[][MAX_VAR]) {
+	if (max_match == n) return; 
+	int x, y, root, q[MAX_VAR], wr = 0, rd = 0; 
+	memset(S, false, sizeof(S)), memset(T, false, sizeof(T)); 
+	memset(prev2, -1, sizeof(prev2)); 
+	for(int x = 0; x < n; x++) if (xy[x] == -1){
+		q[wr++] = root = x, prev2[x] = -2;
+		S[x] = true; break; }
+	for(int y = 0; y < n; y++) slack[y] = lx[root] + ly[y] - cost[root][y], slackx[y] = root;
+	while (true){
+		while (rd < wr){
+			x = q[rd++];
+			for (y = 0; y < n; y++) if (cost[x][y] == lx[x] + ly[y] && !T[y]){
+				if (yx[y] == -1) break; T[y] = true; 
+				q[wr++] = yx[y], add_to_tree(yx[y], x, cost); }
+			if (y < n) break; }
+		if (y < n) break; 
+		update_labels(), wr = rd = 0; 
+		for (y = 0; y < n; y++) if (!T[y] && slack[y] == 0){
+			if (yx[y] == -1){x = slackx[y]; break;}
+			else{
+				T[y] = true; 
+				if (!S[yx[y]]) q[wr++] = yx[y], add_to_tree(yx[y], slackx[y], cost);
+			}}
+		if (y < n) break; }
+	if (y < n){
+		max_match++; 
+		for (int cx = x, cy = y, ty; cx != -2; cx = prev2[cx], cy = ty)
+			ty = xy[cx], yx[cy] = cx, xy[cx] = cy;
+		augment(cost); }
 }
-void step_5(pair<int, int> &rc, vector<vector<int> > &state, vector< vector< bool> > &covered_astrid)
-{
-  int N = state.size();
-  queue<pair<int, int> > path;
-  path.push(rc);
-  while(true)
-  {
-    rc.first = -1;
-    for(int i=0; i < N; i++) if(state[i][rc.second]==ASTRID){ rc.first=i; break;}
-    if(rc.first==-1) break;
-    path.push(rc);
-    for(int i=0; i < N; i++) if(state[rc.first][i]==PRIME){ rc.second=i; break;}
-    path.push(rc);
-  }
-  while(!path.empty())
-  {
-     state[path.front().first][path.front().second] = 1-state[path.front().first][path.front().second];
-     path.pop();
-  }
-  covered_astrid[ROW_COVERED].assign(N, false);
-  covered_astrid[COL_COVERED].assign(N, false);
-  for(int i = 0; i < N*N ; i++) if(state[i/N][i%N]==PRIME) state[i/N][i%N]=NONE;
-}
-void step_6(vector< vector<double> > &costs, vector< vector< bool> > &covered_astrid)
-{
-   int N = costs.size();
-   double minv = DBL_MAX;
-   for(int i = 0; i < N; i++)
-   {
-      if(covered_astrid[ROW_COVERED][i]) continue;
-      for(int j = 0; j < N; j++)
-      {
-         if(!covered_astrid[COL_COVERED][j])
-          minv = min(costs[i][j], minv);
-      }
-   }
-   for(int i = 0; i < N; i++)
-   {
-      for(int j = 0; j < N; j++)
-      {
-	if(covered_astrid[ROW_COVERED][i]) costs[i][j] +=minv;
-	if(!covered_astrid[COL_COVERED][j]) costs[i][j] -=minv;
-      }
-   }
-}
-void KuhnMunkres(vector<int> &assignament, vector<vector<double> > &costs)
-{
-  int N = (int)costs.size(), cols_covered_count;
-  vector<vector<int> > state(N, vector<int>(N, NONE));// 0: astrid,1: prime, 2: none
-  vector<vector<bool> > covered_astrid(4, vector<bool>(N, false)); //0: row_astrid, 1:col_astrid, 2:row_covered, 3:col_covered
-
-  step_1_2(costs, state);
-  cols_covered_count = step_3(covered_astrid, state);
-  while(cols_covered_count < N)
-  {
-     cols_covered_count = 0; 
-     pair<int, int> rc(-1, -1); //row, col
-
-     int nxt_step = step_4(rc, costs, state, covered_astrid);
-
-     if(nxt_step == 5)
-     {
-      step_5(rc, state, covered_astrid);
-      cols_covered_count = step_3(covered_astrid, state);
-     }
-     else if(nxt_step == 6)
-     {
-        step_6(costs, covered_astrid);
-     }
-  }
-/////////////////////////////////////////////////////////////////////////
- for(int i = 0; i < N; i++)
-   for(int j = 0; j < N; j++)
-      if(state[i][j] == ASTRID) assignament[i] = j;
-	
-//  print(costs, covered_astrid, state);
+void hungarian(double cost[][MAX_VAR], int assig[]){
+	max_match = 0, memset(xy, -1, sizeof(xy)); 
+	memset(yx, -1, sizeof(yx)), init_labels(cost), augment(cost); //steps 1-3
+	for(int x = 0; x < n; x++)
+	 assig[x] = xy[x];
 }
 #endif

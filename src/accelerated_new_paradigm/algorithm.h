@@ -9,7 +9,6 @@
 #include <iomanip>
 #include "global.h"
 #include "recomb.h"
-#include "common.h"
 #include "individual.h"
 
 class CMOEAD
@@ -31,6 +30,7 @@ class CMOEAD
 	double distance_var( int a, int b);
 	void dominance_information(vector<unordered_set<int> > &Sp, vector<int> &Np, unordered_set<int> &candidates_front, vector<vector<double> >  &y_obj);
 	void eval_R2(CIndividual &indiv);
+	double fitnessfunction(vector <double> &y_obj, vector <double> &namda);
 	vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj);
 
    private:
@@ -44,7 +44,6 @@ class CMOEAD
 
 
         vector<vector<double> > dist_matrix;
-        vector<int> assignaments;
 	// algorithm parameters
 	long long nfes;          //  the number of function evluations
 	double	D;	//Current minimum distance
@@ -69,15 +68,15 @@ double CMOEAD::distance_var(int a, int b)
 ///distance matrix..
     for(int i = 0; i < nInd; i++)
       for(int j = 0; j < nInd; j++)
-	dist_matrix[i][j] = distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
-    KuhnMunkres(assignaments, dist_matrix);
+	cost_1[i][j] = -distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
+    hungarian(cost_1, asg_1);
 //////////////////////
    double dist = 0 ;
    for(int i = 0; i < nInd; i++)
    {
       for(int j = 0; j < nvar; j++)
       {
-         double factor = (pool[a].x_var[i][j]-pool[b].x_var[assignaments[i]][j])/(vuppBound[j]-vlowBound[j]);
+         double factor = (pool[a].x_var[i][j]-pool[b].x_var[asg_1[i]][j])/(vuppBound[j]-vlowBound[j]);
          dist += factor*factor;
       }
    }
@@ -92,7 +91,6 @@ void CMOEAD::init_population()
     std::ifstream readf(filename);
     namda.resize(nWeight, vector<double> (nobj, 0.0));
     dist_matrix.assign(nInd, vector<double> (nInd, 0.0));
-    assignaments.assign(nInd, 0);
     n_archive=100;
 //    R2_pop.assign(n_archive, vector<double> (nobj, 1000000000));
     // Load weight vectors
@@ -185,10 +183,7 @@ void CMOEAD::exec_emo(int run)
 {
         char filename1[5024];
         char filename2[5024];
-	seed = run;
-	seed = (seed + 23)%1377;
-	rnd_uni_init = -(long)seed;
-
+	srand(seed);
 	//initialization
 	nfes      = 0;
 	init_population();
@@ -411,5 +406,26 @@ void CMOEAD::update_external_file(vector<vector<double> > &archive)
   vector<vector<double > > tmp = archive;
   archive.resize(n_archive);
   for(int i = 0; i < n_archive; i++) archive[i]=tmp[multiset_R2[i]];
+}
+double CMOEAD::fitnessfunction(vector <double> &y_obj, vector <double> &namda)
+{
+    // ASF
+	double max_fun = -1.0e+30;
+        double sum = 0.0;
+	for(int n=0; n<nobj; n++)
+	{
+		double diff = fabs(y_obj[n] - idealpoint[n]);
+		double feval;
+		if(namda[n]==0) 
+			//feval = 0.0001*diff;
+//			feval = 0.0001*diff;
+			feval = diff/0.0001;
+		else
+			//feval = diff*namda[n];
+			feval = diff/namda[n];
+	        sum +=feval;
+		if(feval>max_fun) max_fun = feval;
+	}
+	return max_fun;// + 0.1*sum;
 }
 #endif
