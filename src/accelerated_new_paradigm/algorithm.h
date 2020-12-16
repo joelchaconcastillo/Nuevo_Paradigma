@@ -183,13 +183,13 @@ void CMOEAD::exec_emo(int run)
 {
         char filename1[5024];
         char filename2[5024];
-	srand(seed);
+	srand(run);
 	//initialization
 	nfes      = 0;
 	init_population();
 
-	sprintf(filename1,"%s/POS/POS_R2_EMOA_%s_RUN%d_seed_%d_nobj_%d_nvar_%d_DI_%lf_DF_%lf_CR_%lf_F_%lf",strpath, strTestInstance,run, seed, nobj, nvar, Di/sqrt(nvar*nInd), Df, CR, F);
-	sprintf(filename2,"%s/POF/POF_R2_EMOA_%s_RUN%d_seed_%d_nobj_%d_nvar_%d_DI_%lf_DF_%lf_CR_%lf_F_%lf",strpath, strTestInstance,run, seed, nobj, nvar, Di/sqrt(nvar*nInd), Df, CR, F);
+	sprintf(filename1,"%s/POS/POS_R2_EMOA_%s_RUN%d_seed_%d_nobj_%d_nvar_%d_DI_%lf_DF_%lf_CR_%lf_F_%lf",strpath, strTestInstance,run, run, nobj, nvar, Di/sqrt(nvar*nInd), Df, CR, F);
+	sprintf(filename2,"%s/POF/POF_R2_EMOA_%s_RUN%d_seed_%d_nobj_%d_nvar_%d_DI_%lf_DF_%lf_CR_%lf_F_%lf",strpath, strTestInstance,run, run, nobj, nvar, Di/sqrt(nvar*nInd), Df, CR, F);
         long long current = nfes;
 	long long accumulator = 0, bef = nfes;
 	//save_pos(filename1);

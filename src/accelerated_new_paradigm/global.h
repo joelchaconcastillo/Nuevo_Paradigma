@@ -29,9 +29,6 @@ char    strTestInstance[256];
 char    strpath[800];
 
 
-//------------- Parameters in random number ------------------
-int     seed    = 177;
-
 //------------- Parameters in MOEA/D -------------------------
 
 vector <double> idealpoint;
