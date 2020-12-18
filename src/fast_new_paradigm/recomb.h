@@ -85,6 +85,9 @@ void diff_evo_xoverA(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CI
 }
 void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CIndividual &ind3, CIndividual &child, double CR, double F)
 {
+	child.x_var= ind0.x_var;
+	child.y_obj= ind0.y_obj;
+
 	// Check Whether the cross-over to be performed
 	/*Loop over no of variables*/
 	int n = rand()%(nvar*nInd);//int(rnd_uni(&rnd_uni_init)*nvar*nInd);

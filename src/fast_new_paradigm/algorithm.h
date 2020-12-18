@@ -99,7 +99,7 @@ void CMOEAD::init_population()
 		ind.obj_eval();
 		// Initialize the reference point
 		update_reference(ind);
-		ind.eval_R2();
+//		ind.eval_R2();
 	 	ind.changed.assign(nInd, false);
 		// Save in the population
 		pool.push_back(ind); 
@@ -303,7 +303,7 @@ void CMOEAD::update_external_file(vector<vector<double> > &archive)
   {
       for(auto idx:multiset_R2)
       {
-             double gx = fitnessfunction(archive[idx], namda+w_idx*nobj);//atof(sz);
+          double gx = fitnessfunction(archive[idx], &namda[w_idx*nobj]);//atof(sz);
          fitness_table[w_idx][idx] = gx;
          w_set[w_idx].insert(make_pair(gx, idx));
       }

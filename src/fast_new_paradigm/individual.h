@@ -10,13 +10,10 @@ class CIndividual{
 
 	vector<vector<double> > x_var;
 	vector<vector<double> > y_obj;
-	int    count;
-
 	void   rnd_init();
 	void   obj_eval();
 	void eval_R2();
 	vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj);
-	void   obj_eval(vector<bool> &changed);
 	void   show_objective();
 	void   show_variable();
 	vector<double>  fitness;
@@ -129,7 +126,7 @@ void CIndividual::eval_R2()
        double minv = DBL_MAX;
        for(auto k:fronts[r])
        {
-           minv = min(minv, fitnessfunction(y_obj[k], namda+w*nobj));
+           minv = min(minv, fitnessfunction(y_obj[k], &namda[w*nobj]));
        } 
        fitness[r] += minv;
      }
