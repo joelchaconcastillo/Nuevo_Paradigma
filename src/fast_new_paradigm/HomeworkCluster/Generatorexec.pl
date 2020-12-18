@@ -27,7 +27,7 @@ foreach my $Di(@DI)
 #   my $CR = 0.9;
    my $F = 0.75;
    my $nWeights = 501;
- foreach my $CR(("0.0", "0.1", "0.9"))   
+ foreach my $CR(("0.0"))   
  {
    my @Instance = ("DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4", "DTLZ5", "DTLZ6", "DTLZ7");
 
