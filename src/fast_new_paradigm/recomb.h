@@ -64,9 +64,9 @@ void diff_evo_xoverA(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2, CI
 	         cost_3[i][j] = -distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
           }
         } 
-        hungarian(cost_1, asg_1);
-        hungarian(cost_2, asg_2);
-        hungarian(cost_3, asg_3);
+        hungarian(cost_1, asg_1, nInd);
+        hungarian(cost_2, asg_2, nInd);
+        hungarian(cost_3, asg_3, nInd);
 	for(int n=0;n<nvar*nInd; n++)
 	{
 	  double rnd = rnd_uni;
@@ -97,9 +97,9 @@ void diff_evo_xoverA_exp(CIndividual &ind0, CIndividual &ind1, CIndividual &ind2
 	         cost_3[i][j] = -distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
           }
         } 
-        hungarian(cost_1, asg_1);
-        hungarian(cost_2, asg_2);
-        hungarian(cost_3, asg_3);
+        hungarian(cost_1, asg_1, nInd);
+        hungarian(cost_2, asg_2, nInd);
+        hungarian(cost_3, asg_3, nInd);
 
 	int cont =0;
 	do{

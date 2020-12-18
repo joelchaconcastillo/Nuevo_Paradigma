@@ -54,7 +54,8 @@ void augment(double cost[][MAX_VAR]) {
 			ty = xy[cx], yx[cy] = cx, xy[cx] = cy;
 		augment(cost); }
 }
-void hungarian(double cost[][MAX_VAR], int assig[]){
+void hungarian(double cost[][MAX_VAR], int assig[], int N){
+        n = N;
 	max_match = 0, memset(xy, -1, sizeof(xy)); 
 	memset(yx, -1, sizeof(yx)), init_labels(cost), augment(cost); //steps 1-3
 	for(int x = 0; x < n; x++)
