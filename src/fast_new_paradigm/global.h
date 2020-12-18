@@ -57,7 +57,7 @@ double fitnessfunction(vector <double> &y_obj, double *namda)
 			feval = diff/0.0001;
 		else
 			//feval = diff*namda[n];
-			feval = diff/namda[n*nobj];
+			feval = diff/namda[n];
 	        sum +=feval;
 		if(feval>max_fun) max_fun = feval;
 	}

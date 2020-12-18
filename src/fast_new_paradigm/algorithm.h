@@ -100,6 +100,7 @@ void CMOEAD::init_population()
 		// Initialize the reference point
 		update_reference(ind);
 		ind.eval_R2();
+	 	ind.changed.assign(nInd, false);
 		// Save in the population
 		pool.push_back(ind); 
 		if( i < nPop)
@@ -137,20 +138,21 @@ void CMOEAD::evol_population()
 {
    for(int i = 0; i < nOffspring; i++)
    {
-      int idx_target = i;
+      int idx_target = i;	
       pool[child_idx[i]] = pool[parent_idx[idx_target]];
-
       int idx1=rand()% nPop, idx2=rand()%nPop, idx3=rand()%nPop;
       while(idx1 == idx_target) idx1=rand()%nPop;
       while(idx2 == idx1 || idx2 == idx_target) idx2=rand()%nPop;
       while(idx3 == idx2 || idx3 == idx1 || idx3 == idx_target) idx3=rand()%nPop;
       CIndividual &child = pool[child_idx[i]];
+       
       child.changed.assign(nInd, false);
       diff_evo_xoverA_exp(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F);
+
       realmutation(child, 1.0/nvar);
       child.obj_eval();
+
       update_reference(child); //O(M)
-      child.eval_R2();
       for(int k = 0; k < nInd; k++)
       {
          if(child.changed[k])
