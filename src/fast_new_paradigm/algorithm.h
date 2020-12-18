@@ -148,7 +148,6 @@ void CMOEAD::evol_population()
        
       child.changed.assign(nInd, false);
       diff_evo_xoverA_exp(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F);
-
       realmutation(child, 1.0/nvar);
       child.obj_eval();
 
@@ -159,7 +158,6 @@ void CMOEAD::evol_population()
 	 {
 	   R2_pop.push_back(child.y_obj[k]);
 	   nfes++;
-	   child.changed[k] = false;
 	 }
       }
    }

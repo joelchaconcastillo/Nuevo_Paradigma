@@ -14,7 +14,8 @@
 #include <algorithm>
 #define MAX_VAR 2000
 #include "Kuhn_Munkres.h"
-#define rnd_uni (min((rand()/double(RAND_MAX)), 1.0-1.0e-130))
+//#define rnd_uni (min((rand()/double(RAND_MAX)), 1.0-1.0e-130))
+#define rnd_uni (rand()/double(RAND_MAX))
 using namespace std;
 
 
