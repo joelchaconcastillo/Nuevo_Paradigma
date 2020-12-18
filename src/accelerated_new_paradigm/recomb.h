@@ -12,7 +12,6 @@ void realmutation(vector<double> &ind, double rate)
     long double eta_m = etam;
 
 	int id_rnd = rand()%nvar;
-
     for (int j=0; j<nvar; j++)
     {
         if (rnd_uni<=rate)
