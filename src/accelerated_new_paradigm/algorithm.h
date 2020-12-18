@@ -69,7 +69,7 @@ double CMOEAD::distance_var(int a, int b)
     for(int i = 0; i < nInd; i++)
       for(int j = 0; j < nInd; j++)
 	cost_1[i][j] = -distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
-    hungarian(cost_1, asg_1);
+    hungarian(cost_1, asg_1, nInd);
 //////////////////////
    double dist = 0 ;
    for(int i = 0; i < nInd; i++)
