@@ -21,9 +21,13 @@
 #define NDIV (1+IMM1/NTAB)
 #define EPS 1.2e-130
 #define RNMX (1.0-EPS)
-double rnd_uni2(long *idum);
+double rnd_uni(long *idum)
+{
+   return (rand()/double(RAND_MAX));
+}
+double rnd_uni1(long *idum);
 //the random generator in [0,1)
-double rnd_uni2(long *idum)
+double rnd_uni1(long *idum)
 {
 
 //  return (double)rand()/RAND_MAX;

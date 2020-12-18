@@ -39,7 +39,7 @@ class CMOEAD
 	   bool operator()(const pair<vector<double>, int> &a, const pair<vector<double>, int> &b){return b.first<<a.first; }
         };
 	vector <CIndividual> pool;
-	vector<int> child_idx, parent_idx, inv_parent_idx;
+	vector<int> child_idx, parent_idx;
 	vector<vector<double> > namda, R2_pop;     // weight vector
 
 
