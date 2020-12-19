@@ -126,7 +126,6 @@ void CIndividual::eval_R2()
        for(auto k:fronts[r])
        {
            minv = min(minv, fitnessfunction(y_obj[k], &namda[w*nobj]));
-		cout << fitnessfunction(y_obj[k], &namda[w*nobj]) <<endl;
        } 
        fitness[r] += minv;
      }

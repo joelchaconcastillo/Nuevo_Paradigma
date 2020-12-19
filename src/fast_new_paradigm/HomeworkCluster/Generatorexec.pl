@@ -72,7 +72,7 @@ foreach my $Di(@DI)
                   if( $nobj eq 2) { $nWeights =501; }
 		  if( $nobj eq 3) { $nWeights =496; }
  	
-         	   for(my $Sed = 1; $Sed <=35; $Sed++) ##Realizar 35 ejecuciones con distintas semilla de cada instancia..
+         	   for(my $Sed = 100; $Sed <=135; $Sed++) ##Realizar 35 ejecuciones con distintas semilla de cada instancia..
          	   {
          	   	print $fout "~$PathAlgorithm/Ejecutable $PathAlgorithm $_ $Sed $nobj $nind $pops $nWeights $nOffspring $max_nfes $CR $F $nvar $Di $Df\n";
          	   }
