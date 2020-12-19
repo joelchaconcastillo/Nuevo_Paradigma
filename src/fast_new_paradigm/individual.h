@@ -13,7 +13,6 @@ class CIndividual{
 	void   rnd_init();
 	void   obj_eval();
 	void eval_R2();
-	vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj);
 	void   show_objective();
 	void   show_variable();
 	vector<double>  fitness;
@@ -47,7 +46,7 @@ void CIndividual::obj_eval()
 {
         for(int k = 0;k <nInd; k++)
 	{
-	   if(!changed[k]) continue;
+//	   if(!changed[k]) continue;
 	   if(!strcmp("UF1", strTestInstance))  CEC09_F1(y_obj[k], x_var[k]);
 	   if(!strcmp("UF2", strTestInstance))  CEC09_F2(y_obj[k], x_var[k]);
 	   if(!strcmp("UF3", strTestInstance))  CEC09_F3(y_obj[k], x_var[k]);
@@ -127,72 +126,13 @@ void CIndividual::eval_R2()
        for(auto k:fronts[r])
        {
            minv = min(minv, fitnessfunction(y_obj[k], &namda[w*nobj]));
+		cout << fitnessfunction(y_obj[k], &namda[w*nobj]) <<endl;
        } 
        fitness[r] += minv;
      }
   }
 }
-vector<set<int> > CIndividual::non_dominated_sorting(vector<vector<double> > &y_obj)
-{
-  vector<vector<int> > domin_to(y_obj.size());
-  vector<int> times_dominated(y_obj.size(), 0);
-  vector<set<int> > fronts(1);
-   int current_rank = 0;
-   for(int pidx1=0; pidx1 < y_obj.size(); pidx1++)
-   {
-      for(int pidx2=0; pidx2 < y_obj.size(); pidx2++)
-      {
-	if(pidx1 == pidx2) continue;
-        if( y_obj[pidx1] < y_obj[pidx2]) domin_to[pidx1].push_back(pidx2);
- 	else if( y_obj[pidx2] < y_obj[pidx1]) times_dominated[pidx1]++;
-      }
-      if( times_dominated[pidx1] == 0)
-      {
-         fronts[current_rank].insert(pidx1);
-      }
-  }
-  //ranking.... 
-  set<int> next_front;
-  while(true)
-  {
-     for(auto i:fronts[current_rank])
-     {
-       for(auto j : domin_to[i])
-	{
-	   times_dominated[j]--;
-	   if(times_dominated[j] == 0)
-	   {
-	      next_front.insert(j);
-	   }
-	}
-     }
-    if(next_front.empty())break;
-    fronts.push_back(next_front);
-    current_rank++;
-    next_front.clear();
-  }
-  return fronts;
-}
-bool operator<(const vector<double> &y_obj1, const vector<double> &y_obj2)
-{
-    bool dominated = true;
-    for(int n=0; n<nobj; n++)
-    {
-        if(y_obj2[n]<y_obj1[n]) return false;
-    }
-    if(y_obj1==y_obj2) return false;
-    return dominated;
-}
-bool operator<<(const vector<double> &y_obj1, const vector<double> &y_obj2)
-{
-    for(int n=0; n< y_obj1.size(); n++)
-    {
-	if(y_obj1[n]<y_obj2[n])
-	 return true; 
-        else if(y_obj1[n]>y_obj2[n])
-	 return false;
-    }
-    return true;
-}
+
+
 
 #endif

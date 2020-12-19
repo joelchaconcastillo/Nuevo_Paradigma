@@ -35,6 +35,26 @@ double *namda;
 double cost_1[MAX_VAR][MAX_VAR], cost_2[MAX_VAR][MAX_VAR], cost_3[MAX_VAR][MAX_VAR];
 int asg_1[MAX_VAR], asg_2[MAX_VAR], asg_3[MAX_VAR];
 ////
+bool operator<(const vector<double> &y_obj1, const vector<double> &y_obj2)
+{
+    for(int n=0; n<nobj; n++)
+    {
+        if(y_obj2[n]<y_obj1[n]) return false;
+    }
+    if(y_obj1==y_obj2) return false;
+    return true;
+}
+bool operator<<(const vector<double> &y_obj1, const vector<double> &y_obj2)
+{
+    for(int n=0; n< y_obj1.size(); n++)
+    {
+	if(y_obj1[n]<y_obj2[n])
+	 return true; 
+        else if(y_obj1[n]>y_obj2[n])
+	 return false;
+    }
+    return true;
+}
 double distance_obj(vector<double> &a, vector<double> &b)
 {
    double dist =0.0;
@@ -62,5 +82,46 @@ double fitnessfunction(vector <double> &y_obj, double *namda)
 		if(feval>max_fun) max_fun = feval;
 	}
 	return max_fun;// + 0.1*sum;
+}
+vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
+{
+  vector<vector<int> > domin_to(y_obj.size());
+  vector<int> times_dominated(y_obj.size(), 0);
+  vector<set<int> > fronts(1);
+   int current_rank = 0;
+   for(int pidx1=0; pidx1 < y_obj.size(); pidx1++)
+   {
+      for(int pidx2=0; pidx2 < y_obj.size(); pidx2++)
+      {
+	if(pidx1 == pidx2) continue;
+        if( y_obj[pidx1] < y_obj[pidx2]) domin_to[pidx1].push_back(pidx2);
+ 	else if( y_obj[pidx2] < y_obj[pidx1]) times_dominated[pidx1]++;
+      }
+      if( times_dominated[pidx1] == 0)
+      {
+         fronts[current_rank].insert(pidx1);
+      }
+  }
+  //ranking.... 
+  set<int> next_front;
+  while(true)
+  {
+     for(auto i:fronts[current_rank])
+     {
+       for(auto j : domin_to[i])
+	{
+	   times_dominated[j]--;
+	   if(times_dominated[j] == 0)
+	   {
+	      next_front.insert(j);
+	   }
+	}
+     }
+    if(next_front.empty())break;
+    fronts.push_back(next_front);
+    current_rank++;
+    next_front.clear();
+  }
+  return fronts;
 }
 #endif
