@@ -37,10 +37,8 @@ int *asg_1, *asg_2, *asg_3;
 Hungarian KM;
 struct strIndividual
 {
-    vector<vector<double> > x_var;
-    vector<vector<double> > y_obj;
-    vector<double>  fitness;
-    vector<double> changed;
+    vector<vector<double> > x_var, y_obj;
+    vector<double>  fitness, changed;
 };
 bool operator<(const vector<double> &y_obj1, const vector<double> &y_obj2)
 {
@@ -71,24 +69,15 @@ double distance_obj(vector<double> &a, vector<double> &b)
 }
 double fitnessfunction(vector <double> &y_obj, double *namda)
 {
-    // ASF
 	double max_fun = -1.0e+30;
-        double sum = 0.0;
 	for(int n=0; n<nobj; n++)
 	{
-		double diff = fabs(y_obj[n] - idealpoint[n]);
-		double feval;
-		if(namda[n]==0) 
-			//feval = 0.0001*diff;
-//			feval = 0.0001*diff;
-			feval = diff/0.0001;
-		else
-			//feval = diff*namda[n];
-			feval = diff/namda[n];
-	        sum +=feval;
-		if(feval>max_fun) max_fun = feval;
+		double feval, diff = fabs(y_obj[n] - idealpoint[n]);
+		if(namda[n]==0) feval = diff/0.0001;
+		else feval = diff/namda[n];
+		max_fun = max(max_fun, feval);
 	}
-	return max_fun;// + 0.1*sum;
+	return max_fun;;
 }
 vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
 {

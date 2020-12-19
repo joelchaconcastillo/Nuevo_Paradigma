@@ -20,7 +20,7 @@ class CMOEAD
 
 	void init_population();                
 	void obj_eval(vector<double> &x_var, vector<double> &y_obj);
-	void update_reference(vector<double> &point); 
+	bool update_reference(vector<double> &point); 
 	void replacement_phase();
 	void evol_population();                                    
 	void exec_emo(int run);
@@ -115,7 +115,7 @@ void CMOEAD::init_population()
         for(int k= 0; k < nInd; k++)
 	{  
 	   for(int n = 0; n<nvar; n++)
-             ind.x_var[k][n] = vlowBound[n] + rnd_uni*(vuppBound[n] - vlowBound[n]);    
+             ind.x_var[k][n] = vlowBound[n] + rnd_uni*(vuppBound[n] - vlowBound[n]);     
 	    obj_eval(ind.x_var[k], ind.y_obj[k]), update_reference(ind.y_obj[k]), R2_pop.push_back(ind.y_obj[k]);
 	}
 	// Save in the population
@@ -129,22 +129,24 @@ void CMOEAD::init_population()
      update_external_file(R2_pop);
      readf.close();
 }
-void CMOEAD::update_reference(vector<double> &point)
+bool CMOEAD::update_reference(vector<double> &point)
 {
+  bool updated = false;
   for(int n=0; n<nobj; n++)
      if(point[n]<idealpoint[n])
-        idealpoint[n] = point[n];
+        idealpoint[n] = point[n], updated=true;
+  return updated;
 }
 void CMOEAD::evol_population()
 {
    for(int i = 0; i < nOffspring; i++)
    {
-      pool[child_idx[i]] = pool[parent_idx[i]];
       int idx1=parent_idx[rand()% nPop], idx2=parent_idx[rand()%nPop], idx3=parent_idx[rand()%nPop], idx_target = parent_idx[i];
       while(idx1 == i) idx1=parent_idx[rand()%nPop];
       while(idx2 == idx1 || idx2 == i) idx2=parent_idx[rand()%nPop];
       while(idx3 == idx2 || idx3 == idx1 || idx3 == i) idx3=parent_idx[rand()%nPop];
       strIndividual &child = pool[child_idx[i]], &ind0 = pool[idx_target], &ind1 = pool[idx1], &ind2 = pool[idx2], &ind3 = pool[idx3];
+      child = ind0;
       child.changed.assign(nInd, false);
       for(int i = 0; i < nInd; i++) //mating...
         for(int j = 0; j < nInd; j++)
@@ -162,7 +164,7 @@ void CMOEAD::evol_population()
 	   if(!child.changed[k])continue;
            realmutation(child.x_var[k], 1.0/nvar);
            obj_eval(child.x_var[k], child.y_obj[k]);
-           update_reference(child.y_obj[k]); //O(M)
+           update_reference(child.y_obj[k]); 
      	   R2_pop.push_back(child.y_obj[k]);
      	   nfes++;
       }
@@ -199,7 +201,6 @@ void CMOEAD::exec_emo(int run)
 		}
 		bef=nfes;
 		evol_population();
-//	        nfes += nOffspring*nInd;
 	}
 
         update_external_file(R2_pop);
