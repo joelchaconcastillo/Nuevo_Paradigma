@@ -120,7 +120,7 @@ vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
   }
   return fronts;
 }
-void eval_R2(vector<vector<double> > &y_obj, vector<double> fitness)
+void eval_R2(vector<vector<double> > &y_obj, vector<double> &fitness)
 {
   vector<set<int> > fronts = non_dominated_sorting(y_obj);
   fitness.assign(nInd, 0);
