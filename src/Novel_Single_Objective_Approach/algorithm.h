@@ -9,7 +9,7 @@
 #include <iomanip>
 #include "global.h"
 #include "recomb.h"
-#include "individual.h"
+#include "problem.h"
 
 class CMOEAD
 {
@@ -19,7 +19,8 @@ class CMOEAD
 	virtual ~CMOEAD();
 
 	void init_population();                
-	void update_reference(CIndividual &ind); 
+	void obj_eval(vector<double> &x_var, vector<double> &y_obj);
+	void update_reference(vector<double> &point); 
 	void replacement_phase();
 	void evol_population();                                    
 	void exec_emo(int run);
@@ -28,14 +29,13 @@ class CMOEAD
 	void update_parameterD();
 	void update_external_file(vector<vector<double> > &archive);
 	double distance_var( int a, int b);
-	void dominance_information(vector<unordered_set<int> > &Sp, vector<int> &Np, unordered_set<int> &candidates_front, vector<vector<double> >  &y_obj);
 
    private:
         struct compare
         {
 	   bool operator()(const pair<vector<double>, int> &a, const pair<vector<double>, int> &b){return b.first<<a.first; }
         };
-	vector <CIndividual> pool;
+	vector <strIndividual> pool;
 	vector<int> child_idx, parent_idx, inv_parent_idx;
 	vector<vector<double> > R2_pop;     // weight vector
 
@@ -106,75 +106,65 @@ void CMOEAD::init_population()
 
     for(int i=0; i< nPop+nOffspring; i++)
     {
-	       CIndividual ind;
-		// Randomize and evaluate solution
-		ind.rnd_init();
-		ind.obj_eval();
-		// Initialize the reference point
-		update_reference(ind);
-//		ind.eval_R2();
-	 	ind.changed.assign(nInd, false);
-		// Save in the population
-		pool.push_back(ind); 
-		if( i < nPop)
-		{
-		   parent_idx.push_back(i);
-		}
-		else
-		   child_idx.push_back(i);
-		nfes +=nInd;
+        strIndividual ind;
+        ind.x_var.assign(nInd, vector<double>(nvar, 0));
+        ind.y_obj.assign(nInd, vector<double>(nobj, 0));
+	ind.fitness.assign(nInd, 0);
+	ind.changed.assign(nInd, false);
+	// random initialization..
+        for(int k= 0; k < nInd; k++)
+	{  
+	   for(int n = 0; n<nvar; n++)
+             ind.x_var[k][n] = vlowBound[n] + rnd_uni*(vuppBound[n] - vlowBound[n]);    
+	    obj_eval(ind.x_var[k], ind.y_obj[k]), update_reference(ind.y_obj[k]), R2_pop.push_back(ind.y_obj[k]);
+	}
+	// Save in the population
+	pool.push_back(ind); 
+	if( i < nPop)
+	   parent_idx.push_back(i);
+	else
+	   child_idx.push_back(i);
+	nfes +=nInd;
      }
-
-     for(int i = 0; i < parent_idx.size(); i++)
-     for(int j = 0; j < pool[parent_idx[i]].y_obj.size(); j++) R2_pop.push_back(pool[parent_idx[i]].y_obj[j]);
-
-     for(int i = 0; i < child_idx.size(); i++)
-     for(int j = 0; j < pool[child_idx[i]].y_obj.size(); j++) R2_pop.push_back(pool[child_idx[i]].y_obj[j]);
-
      update_external_file(R2_pop);
      readf.close();
 }
-void CMOEAD::update_reference(CIndividual &ind)
+void CMOEAD::update_reference(vector<double> &point)
 {
-   for(int k = 0; k <nInd; k++)
-   {
-      for(int n=0; n<nobj; n++)
-      {
-         if(ind.y_obj[k][n]<idealpoint[n])
-         {
-            idealpoint[n] = ind.y_obj[k][n];
-         }
-      }
-  }
+  for(int n=0; n<nobj; n++)
+     if(point[n]<idealpoint[n])
+        idealpoint[n] = point[n];
 }
 void CMOEAD::evol_population()
 {
    for(int i = 0; i < nOffspring; i++)
    {
-      int idx_target = i;	
-      pool[child_idx[i]] = pool[parent_idx[idx_target]];
-      int idx1=rand()% nPop, idx2=rand()%nPop, idx3=rand()%nPop;
-      while(idx1 == idx_target) idx1=rand()%nPop;
-      while(idx2 == idx1 || idx2 == idx_target) idx2=rand()%nPop;
-      while(idx3 == idx2 || idx3 == idx1 || idx3 == idx_target) idx3=rand()%nPop;
-      CIndividual &child = pool[child_idx[i]];
-       
+      pool[child_idx[i]] = pool[parent_idx[i]];
+      int idx1=parent_idx[rand()% nPop], idx2=parent_idx[rand()%nPop], idx3=parent_idx[rand()%nPop], idx_target = parent_idx[i];
+      while(idx1 == i) idx1=parent_idx[rand()%nPop];
+      while(idx2 == idx1 || idx2 == i) idx2=parent_idx[rand()%nPop];
+      while(idx3 == idx2 || idx3 == idx1 || idx3 == i) idx3=parent_idx[rand()%nPop];
+      strIndividual &child = pool[child_idx[i]], &ind0 = pool[idx_target], &ind1 = pool[idx1], &ind2 = pool[idx2], &ind3 = pool[idx3];
       child.changed.assign(nInd, false);
-
-      diff_evo_xoverA_exp(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F);
-      realmutation(child, 1.0/nvar);
-
-
-      child.obj_eval();
-
-      update_reference(child); //O(M)
+      for(int i = 0; i < nInd; i++) //mating...
+        for(int j = 0; j < nInd; j++)
+        {
+	         cost_1[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind1.y_obj[j]);
+	         cost_2[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind2.y_obj[j]);
+	         cost_3[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
+        }
+       KM.hungarian(cost_1, asg_1);
+       KM.hungarian(cost_2, asg_2);
+       KM.hungarian(cost_3, asg_3);
+       diff_evo_xoverA_exp(ind0, ind1, ind2, ind3, child, CR, F, asg_1, asg_2, asg_3);
       for(int k = 0; k < nInd; k++)
-      {
-         if(child.changed[k])
-	 {
-	   R2_pop.push_back(child.y_obj[k]);
-	   nfes++;
-	 }
+      {	
+	   if(!child.changed[k])continue;
+           realmutation(child.x_var[k], 1.0/nvar);
+           obj_eval(child.x_var[k], child.y_obj[k]);
+           update_reference(child.y_obj[k]); //O(M)
+     	   R2_pop.push_back(child.y_obj[k]);
+     	   nfes++;
       }
    }
    if(R2_pop.size() >= 200) 
@@ -239,16 +229,6 @@ void CMOEAD::save_front(char saveFilename[4024])
              fout<<R2_pop[n][k]<<"  ";
           fout<<"\n";
     }
-//    for(int n=0; n < nPop; n++)
-//    {
-//       for(int i = 0; i < nInd; i++)
-//       {
-//          for(int k=0;k<nobj;k++)
-//             fout<<pool[child_idx[n]].y_obj[i][k]<<"  ";
-//          fout<<"\n";
-//      }
-//    }
-
     fout.close();
 }
 void CMOEAD::save_pos(char saveFilename[4024])
@@ -271,7 +251,7 @@ void CMOEAD::replacement_phase()
   priority_queue<pair<vector<double>, int>, vector<pair<vector<double>, int>>, compare> candidates;
   for(int i = 0; i < pool.size(); i++)
   {
-    pool[i].eval_R2();
+    eval_R2(pool[i].y_obj, pool[i].fitness);
     candidates.push(make_pair(pool[i].fitness, i));
   }
   while(!candidates.empty() && survivors.size() < nPop)
@@ -348,5 +328,34 @@ void CMOEAD::update_external_file(vector<vector<double> > &archive)
   vector<vector<double > > tmp = archive;
   archive.resize(n_archive);
   for(int i = 0; i < n_archive; i++) archive[i]=tmp[multiset_R2[i]];
+}
+void CMOEAD::obj_eval(vector<double> &x_var, vector<double> &y_obj)
+{
+   if(!strcmp("UF1", strTestInstance))  CEC09_F1(y_obj, x_var);
+  else if(!strcmp("UF2", strTestInstance))  CEC09_F2(y_obj, x_var);
+  else if(!strcmp("UF3", strTestInstance))  CEC09_F3(y_obj, x_var);
+  else if(!strcmp("UF4", strTestInstance))  CEC09_F4(y_obj, x_var);
+  else if(!strcmp("UF5", strTestInstance))  CEC09_F5(y_obj, x_var);
+  else if(!strcmp("UF6", strTestInstance))  CEC09_F6(y_obj, x_var);
+  else if(!strcmp("UF7", strTestInstance))  CEC09_F7(y_obj, x_var);
+  else if(!strcmp("UF8", strTestInstance))  CEC09_F8(y_obj, x_var);
+  else if(!strcmp("UF9", strTestInstance))  CEC09_F9(y_obj, x_var);
+  else if(!strcmp("UF10", strTestInstance)) CEC09_F10(y_obj, x_var);
+  else if(!strcmp("WFG1", strTestInstance))  wfg1(y_obj, x_var);
+  else if(!strcmp("WFG2", strTestInstance))  wfg2(y_obj, x_var);
+  else if(!strcmp("WFG3", strTestInstance))  wfg3(y_obj, x_var);
+  else if(!strcmp("WFG4", strTestInstance))  wfg4(y_obj, x_var);
+  else if(!strcmp("WFG5", strTestInstance))  wfg5(y_obj, x_var);
+  else if(!strcmp("WFG6", strTestInstance))  wfg6(y_obj, x_var);
+  else if(!strcmp("WFG7", strTestInstance))  wfg7(y_obj, x_var);
+  else if(!strcmp("WFG8", strTestInstance))  wfg8(y_obj, x_var);
+  else if(!strcmp("WFG9", strTestInstance))  wfg9(y_obj, x_var);
+  else if(!strcmp("DTLZ1", strTestInstance))  dtlz1(y_obj, x_var);
+  else if(!strcmp("DTLZ2", strTestInstance))  dtlz2(y_obj, x_var);
+  else if(!strcmp("DTLZ3", strTestInstance))  dtlz3(y_obj, x_var);
+  else if(!strcmp("DTLZ4", strTestInstance))  dtlz4(y_obj, x_var);
+  else if(!strcmp("DTLZ5", strTestInstance))  dtlz5(y_obj, x_var);
+  else if(!strcmp("DTLZ6", strTestInstance))  dtlz6(y_obj, x_var);
+  else if(!strcmp("DTLZ7", strTestInstance))  dtlz7(y_obj, x_var);
 }
 #endif

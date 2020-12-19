@@ -35,7 +35,13 @@ double *namda;
 double *cost_1, *cost_2, *cost_3;
 int *asg_1, *asg_2, *asg_3;
 Hungarian KM;
-////
+struct strIndividual
+{
+    vector<vector<double> > x_var;
+    vector<vector<double> > y_obj;
+    vector<double>  fitness;
+    vector<double> changed;
+};
 bool operator<(const vector<double> &y_obj1, const vector<double> &y_obj2)
 {
     for(int n=0; n<nobj; n++)
@@ -124,5 +130,22 @@ vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
     next_front.clear();
   }
   return fronts;
+}
+void eval_R2(vector<vector<double> > &y_obj, vector<double> fitness)
+{
+  vector<set<int> > fronts = non_dominated_sorting(y_obj);
+  fitness.assign(nInd, 0);
+  for(int r = 0; r < fronts.size(); r++)
+  {
+     for(int w = 0; w < nWeight; w++)
+     {
+       double minv = DBL_MAX;
+       for(auto k:fronts[r])
+       {
+           minv = min(minv, fitnessfunction(y_obj[k], &namda[w*nobj]));
+       } 
+       fitness[r] += minv;
+     }
+  }
 }
 #endif
