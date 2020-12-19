@@ -117,7 +117,7 @@ void CMOEAD::init_population()
      for(int i = 0; i < child_idx.size(); i++)
      for(int j = 0; j < pool[child_idx[i]].y_obj.size(); j++) R2_pop.push_back(pool[child_idx[i]].y_obj[j]);
 
-//     update_external_file(R2_pop);
+     update_external_file(R2_pop);
      readf.close();
 }
 void CMOEAD::update_reference(CIndividual &ind)
@@ -146,39 +146,25 @@ void CMOEAD::evol_population()
       CIndividual &child = pool[child_idx[i]];
        
       child.changed.assign(nInd, false);
-//	for(int a = 0; a< nInd; a++)
-//     	cout << child.changed[a]<< " ";
-//	cout <<endl;
 
       diff_evo_xoverA_exp(pool[parent_idx[idx_target]], pool[parent_idx[idx1]], pool[parent_idx[idx2]], pool[parent_idx[idx3]], child, CR, F);
       realmutation(child, 1.0/nvar);
-//      for(int a = 0; a< nInd; a++)
-//     	for(int j = 0; j < nobj;j++)cout << child.y_obj[a][j]<< " ";
-//	cout << endl;
 
 
       child.obj_eval();
-
-//      for(int a = 0; a< nInd; a++)
-//     	for(int j = 0; j < nobj;j++)cout << child.y_obj[a][j]<< " ";
-//	cout << endl;
-
-//	for(int a = 0; a< nInd; a++)
-//     	cout << child.changed[a]<< " ";
-//	cout  <<endl<<endl;
 
       update_reference(child); //O(M)
       for(int k = 0; k < nInd; k++)
       {
          if(child.changed[k])
 	 {
-//	   R2_pop.push_back(child.y_obj[k]);
+	   R2_pop.push_back(child.y_obj[k]);
 	   nfes++;
 	 }
       }
    }
- //  if(R2_pop.size() >= 200) 
- //  update_external_file(R2_pop);
+   if(R2_pop.size() >= 200) 
+   update_external_file(R2_pop);
    replacement_phase();
 }
 void CMOEAD::exec_emo(int run)
@@ -212,7 +198,7 @@ void CMOEAD::exec_emo(int run)
 //	        nfes += nOffspring*nInd;
 	}
 
-        //update_external_file(R2_pop);
+        update_external_file(R2_pop);
 	save_pos(filename1);
 	save_front(filename2);
 }
@@ -233,12 +219,12 @@ void CMOEAD::save_front(char saveFilename[4024])
           fout<<"\n";
       }
     }
-//    for(int n=0; n < n_archive; n++)
-//    {
-//          for(int k=0;k<nobj;k++)
-//             fout<<R2_pop[n][k]<<"  ";
-//          fout<<"\n";
-//    }
+    for(int n=0; n < n_archive; n++)
+    {
+          for(int k=0;k<nobj;k++)
+             fout<<R2_pop[n][k]<<"  ";
+          fout<<"\n";
+    }
 //    for(int n=0; n < nPop; n++)
 //    {
 //       for(int i = 0; i < nInd; i++)

@@ -46,7 +46,7 @@ void CIndividual::obj_eval()
 {
         for(int k = 0;k <nInd; k++)
 	{
-//	   if(!changed[k]) continue;
+	   if(!changed[k]) continue;
 	   if(!strcmp("UF1", strTestInstance))  CEC09_F1(y_obj[k], x_var[k]);
 	   if(!strcmp("UF2", strTestInstance))  CEC09_F2(y_obj[k], x_var[k]);
 	   if(!strcmp("UF3", strTestInstance))  CEC09_F3(y_obj[k], x_var[k]);
