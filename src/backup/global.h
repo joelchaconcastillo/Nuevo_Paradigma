@@ -39,8 +39,6 @@ struct strIndividual
 {
     vector<vector<double> > x_var, y_obj;
     vector<double>  fitness, changed;
-    vector<int> Np, prev_Np;
-    vector<unordered_set<int> > Sp, prev_Sp;
 };
 bool operator<(const vector<double> &y_obj1, const vector<double> &y_obj2)
 {
@@ -49,6 +47,17 @@ bool operator<(const vector<double> &y_obj1, const vector<double> &y_obj2)
         if(y_obj2[n]<y_obj1[n]) return false;
     }
     if(y_obj1==y_obj2) return false;
+    return true;
+}
+bool operator<<(const vector<double> &y_obj1, const vector<double> &y_obj2)
+{
+    for(int n=0; n< y_obj1.size(); n++)
+    {
+	if(y_obj1[n]<y_obj2[n])
+	 return true; 
+        else if(y_obj1[n]>y_obj2[n])
+	 return false;
+    }
     return true;
 }
 double distance_obj(vector<double> &a, vector<double> &b)
@@ -111,24 +120,21 @@ vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
   }
   return fronts;
 }
-void eval_R2(strIndividual &ind)
+void eval_R2(vector<vector<double> > &y_obj, vector<double> &fitness)
 {
-   set<int> cf;
-   for(int i = 0; i < nInd; i++) if(ind.Np[i] == 0) cf.insert(i), ind.Np[i]--;
-   for(auto idx:cf)
-      for(auto idd:ind.Sp[idx])
-	     ind.Np[idd]--;
-
-     double fit = 0.0;
+  vector<set<int> > fronts = non_dominated_sorting(y_obj);
+  fitness.assign(nInd, 0);
+  for(int r = 0; r < fronts.size(); r++)
+  {
      for(int w = 0; w < nWeight; w++)
      {
        double minv = DBL_MAX;
-       for(auto k:cf)
+       for(auto k:fronts[r])
        {
-           minv = min(minv, fitnessfunction(ind.y_obj[k], &namda[w*nobj]));
+           minv = min(minv, fitnessfunction(y_obj[k], &namda[w*nobj]));
        } 
-       fit += minv;
+       fitness[r] += minv;
      }
-     ind.fitness.push_back(fit);
+  }
 }
 #endif

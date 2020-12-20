@@ -7,7 +7,6 @@
 #include <map>
 #include <unordered_set>
 #include <iomanip>
-#include <iterator>
 #include "global.h"
 #include "recomb.h"
 #include "problem.h"
@@ -31,11 +30,15 @@ class CMOEAD
 	void update_external_file(vector<vector<double> > &archive);
 	double distance_var( int a, int b);
 
-	vector <strIndividual> pool;
    private:
-        
+        struct compare
+        {
+	   bool operator()(const pair<vector<double>, int> &a, const pair<vector<double>, int> &b){return b.first<<a.first; }
+        };
+	vector <strIndividual> pool;
 	vector<int> child_idx, parent_idx, inv_parent_idx;
 	vector<vector<double> > R2_pop;     // weight vector
+
 	// algorithm parameters
 	long long nfes;          //  the number of function evluations
 	double	D;	//Current minimum distance
@@ -64,12 +67,10 @@ void CMOEAD::update_parameterD()
 }
 double CMOEAD::distance_var(int a, int b)
 {
-	
-    for(int i = 0; i < nInd; i++) asg_1[i] = i;
-//    for(int i = 0; i < nInd; i++)
-//      for(int j = 0; j < nInd; j++)
-//	cost_1[i*nInd+j] = -distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
-//    KM.hungarian(cost_1, asg_1);
+    for(int i = 0; i < nInd; i++)
+      for(int j = 0; j < nInd; j++)
+	cost_1[i*nInd+j] = -distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
+    KM.hungarian(cost_1, asg_1);
    double dist = 0.0;
    for(int i = 0; i < nInd; i++)
    {
@@ -108,6 +109,7 @@ void CMOEAD::init_population()
         strIndividual ind;
         ind.x_var.assign(nInd, vector<double>(nvar, 0));
         ind.y_obj.assign(nInd, vector<double>(nobj, 0));
+	ind.fitness.assign(nInd, 0);
 	ind.changed.assign(nInd, false);
 	// random initialization..
         for(int k= 0; k < nInd; k++)
@@ -116,17 +118,7 @@ void CMOEAD::init_population()
              ind.x_var[k][n] = vlowBound[n] + rnd_uni*(vuppBound[n] - vlowBound[n]);     
 	    obj_eval(ind.x_var[k], ind.y_obj[k]), update_reference(ind.y_obj[k]), R2_pop.push_back(ind.y_obj[k]);
 	}
-          ind.Sp.assign(nInd, unordered_set<int>());
-          ind.Np.assign(nInd, 0);
-          for(int pidx1=0; pidx1< nInd; pidx1++)
-          {
-             for(int pidx2=0; pidx2< nInd; pidx2++)
-             {
-               if(pidx1 == pidx2) continue;
-               if( ind.y_obj[pidx1] < ind.y_obj[pidx2]) ind.Sp[pidx1].insert(pidx2);
-               else if( ind.y_obj[pidx2] < ind.y_obj[pidx1]) ind.Np[pidx1]++;
-             }
-          }	
+	// Save in the population
 	pool.push_back(ind); 
 	if( i < nPop)
 	   parent_idx.push_back(i);
@@ -156,33 +148,22 @@ void CMOEAD::evol_population()
       strIndividual &child = pool[child_idx[i]], &ind0 = pool[idx_target], &ind1 = pool[idx1], &ind2 = pool[idx2], &ind3 = pool[idx3];
       child = ind0;
       child.changed.assign(nInd, false);
-	for(int i = 0; i < nInd; i++)asg_1[i]=i, asg_2[i]=i, asg_3[i]=i;
-//      for(int i = 0; i < nInd; i++) //mating...
-//        for(int j = 0; j < nInd; j++)
-//        {
-//	         cost_1[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind1.y_obj[j]);
-//	         cost_2[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind2.y_obj[j]);
-//	         cost_3[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
-//        }
-//       KM.hungarian(cost_1, asg_1);
-//       KM.hungarian(cost_2, asg_2);
-//       KM.hungarian(cost_3, asg_3);
+      for(int i = 0; i < nInd; i++) //mating...
+        for(int j = 0; j < nInd; j++)
+        {
+	         cost_1[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind1.y_obj[j]);
+	         cost_2[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind2.y_obj[j]);
+	         cost_3[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
+        }
+       KM.hungarian(cost_1, asg_1);
+       KM.hungarian(cost_2, asg_2);
+       KM.hungarian(cost_3, asg_3);
        diff_evo_xoverA_exp(ind0, ind1, ind2, ind3, child, CR, F, asg_1, asg_2, asg_3);
       for(int k = 0; k < nInd; k++)
       {	
 	   if(!child.changed[k])continue;
-	   for(auto dp : child.Sp[k]) child.Np[dp]--;
-           for(int j = 0; j < nInd; j++) child.Sp[j].erase(k); ///IT CAN BE FASTER!!
-	   child.Sp[k].clear();
-	   child.Np[k]=0;
            realmutation(child.x_var[k], 1.0/nvar);
            obj_eval(child.x_var[k], child.y_obj[k]);
-           for(int j = 0; j < nInd; j++)
-	   {
-	     if( k == j) continue;
-	     if(child.y_obj[k] < child.y_obj[j]) child.Sp[k].insert(j), child.Np[j]++;
-	     else if(child.y_obj[j] < child.y_obj[k]) child.Np[k]++, child.Sp[j].insert(k);
-	   }
            update_reference(child.y_obj[k]); 
      	   R2_pop.push_back(child.y_obj[k]);
      	   nfes++;
@@ -267,29 +248,16 @@ void CMOEAD::save_pos(char saveFilename[4024])
 }
 void CMOEAD::replacement_phase()
 {
-  auto compare_l = [&](const int &a, const int &b)->bool
-  {
-     strIndividual &ind_a = pool[a], &ind_b = pool[b];
-     int rank = 0;
-     do{
-	if(ind_a.fitness.size() <= rank) {eval_R2(ind_a); continue;}
-	if(ind_b.fitness.size() <= rank) {eval_R2(ind_b); continue;}
-        if(ind_a.fitness[rank] > ind_b.fitness[rank]) return true;
-        else if(ind_b.fitness[rank] > ind_a.fitness[rank]) return false;
-        rank++;	
-     }while(rank<nInd);
-     return true;
-  };
   unordered_set<int> penalized, survivors;
-  priority_queue<int, vector<int>, decltype(compare_l)> candidates(compare_l);
- 
-  for(auto ind:pool) ind.prev_Sp = ind.Sp, ind.prev_Np = ind.Np, ind.fitness.clear(); 
-  for(int i = 0; i < pool.size(); i++) candidates.push(i);
-  for(auto ind:pool) ind.Sp = ind.prev_Sp, ind.Np = ind.prev_Np; 
-
+  priority_queue<pair<vector<double>, int>, vector<pair<vector<double>, int>>, compare> candidates;
+  for(int i = 0; i < pool.size(); i++)
+  {
+    eval_R2(pool[i].y_obj, pool[i].fitness);
+    candidates.push(make_pair(pool[i].fitness, i));
+  }
   while(!candidates.empty() && survivors.size() < nPop)
   {
-     int idx = candidates.top(); candidates.pop();
+     int idx = candidates.top().second; candidates.pop();
      bool flagIsSurvivor=true;
      for(auto s:survivors) 
 	if(distance_var(s, idx) < D){flagIsSurvivor = false; break;}
