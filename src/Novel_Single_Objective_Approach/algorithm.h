@@ -69,10 +69,13 @@ double CMOEAD::distance_var(int a, int b)
    double *distab=pointer_dist(a,b);
    if(*distab > 0.0) return *distab;
    int *asg_1 = pointer_hyp(a,b);
+   if(*asg_1==-1)
+   {
      for(int i = 0; i < nInd; i++)
       for(int j = 0; j < nInd; j++)
        cost_1[i*nInd+j] = -distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
      KM.hungarian(cost_1, pointer_hyp(a, b));
+   }
    double dist = 0.0;
    for(int i = 0; i < nInd; i++)
    {
