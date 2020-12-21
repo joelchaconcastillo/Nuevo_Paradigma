@@ -32,7 +32,7 @@ int nInd, nPop, nOffspring, nWeight;
 long long max_nfes;
 double *namda;
 ////Hungarian information
-double *cost_1, *cost_2, *cost_3;
+double *cost_1, *cost_2, *cost_3, *memo_dist;
 int *hypermat_assig;//sort of lazy updating..
 //int *asg_1, *asg_2, *asg_3;
 Hungarian KM;

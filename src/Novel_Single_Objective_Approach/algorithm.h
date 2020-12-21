@@ -31,6 +31,7 @@ class CMOEAD
 	void update_external_file(vector<vector<double> > &archive);
 	double distance_var( int a, int b);
 	inline int* pointer_hyp(int a, int b){ if(a > b) swap(a, b);  return hypermat_assig +a*(nPop+nOffspring)*nInd + b*nInd; }
+	inline double* pointer_dist(int a, int b){ if(a > b) swap(a, b);  return memo_dist + a*(nPop+nOffspring) + b; }
 	vector <strIndividual> pool;
    private:
         
@@ -55,6 +56,7 @@ CMOEAD::~CMOEAD()
 //   delete[] asg_2;
 //   delete[] asg_3;
    delete[] hypermat_assig;
+   delete[] memo_dist;
 }
 void CMOEAD::update_parameterD()
 {
@@ -64,14 +66,13 @@ void CMOEAD::update_parameterD()
 }
 double CMOEAD::distance_var(int a, int b)
 {
-   int *asg_1 = pointer_hyp(a, b);
-   if(*asg_1 == -1)
-   {
+   double *distab=pointer_dist(a,b);
+   if(*distab > 0.0) return *distab;
+   int *asg_1 = pointer_hyp(a,b);
      for(int i = 0; i < nInd; i++)
       for(int j = 0; j < nInd; j++)
        cost_1[i*nInd+j] = -distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
      KM.hungarian(cost_1, pointer_hyp(a, b));
-   }
    double dist = 0.0;
    for(int i = 0; i < nInd; i++)
    {
@@ -81,7 +82,7 @@ double CMOEAD::distance_var(int a, int b)
          dist += factor*factor;
       }
    }
-   return sqrt(dist);
+   return (*distab) = sqrt(dist);
 }
 void CMOEAD::init_population()
 {
@@ -97,6 +98,8 @@ void CMOEAD::init_population()
     cost_3 = new double[nInd*nInd];
     hypermat_assig = new int[(nPop+nOffspring)*(nPop+nOffspring)*nInd];
     memset(hypermat_assig, -1, sizeof(int)*(nPop+nOffspring)*(nPop+nOffspring)*nInd);
+    memo_dist = new double[(nPop+nOffspring)*(nPop+nOffspring)];
+    memset(memo_dist, -1, sizeof(double)*(nPop+nOffspring)*(nPop+nOffspring));
 //  asg_1 = new int[nInd];
 //  asg_2 = new int[nInd];
 //  asg_3 = new int[nInd];
@@ -139,13 +142,13 @@ bool CMOEAD::update_reference(vector<double> &point)
 }
 void CMOEAD::evol_population()
 {
-   for(auto id1:parent_idx) for(auto id2:child_idx) *(pointer_hyp(id1, id2))=-1;
+   for(auto id1:parent_idx) for(auto id2:child_idx) *(pointer_hyp(id1, id2))=-1, *(pointer_dist(id1, id2))=-1;
    for(int i = 0; i < nOffspring; i++)
    {
       int idx1=parent_idx[rand()% nPop], idx2=parent_idx[rand()%nPop], idx3=parent_idx[rand()%nPop], idx_target = parent_idx[i];
-      while(idx1 == i) idx1=parent_idx[rand()%nPop];
-      while(idx2 == idx1 || idx2 == i) idx2=parent_idx[rand()%nPop];
-      while(idx3 == idx2 || idx3 == idx1 || idx3 == i) idx3=parent_idx[rand()%nPop];
+      while(idx1 == idx_target) idx1=parent_idx[rand()%nPop];
+      while(idx2 == idx1 || idx2 == idx_target) idx2=parent_idx[rand()%nPop];
+      while(idx3 == idx2 || idx3 == idx1 || idx3 == idx_target) idx3=parent_idx[rand()%nPop];
 
       strIndividual &child = pool[child_idx[i]], &ind0 = pool[idx_target], &ind1 = pool[idx1], &ind2 = pool[idx2], &ind3 = pool[idx3];
       child = ind0;
@@ -178,11 +181,11 @@ void CMOEAD::evol_population()
            realmutation(child.x_var[k], 1.0/nvar);
            obj_eval(child.x_var[k], child.y_obj[k]);
            update_reference(child.y_obj[k]); 
-     	   R2_pop.push_back(child.y_obj[k]);
+//     	   R2_pop.push_back(child.y_obj[k]);
      	   nfes++;
       }
-      if(R2_pop.size() >= 2*n_archive) 
-      update_external_file(R2_pop);
+//      if(R2_pop.size() >= 2*n_archive) 
+//      update_external_file(R2_pop);
    }
    replacement_phase();
 }
@@ -237,12 +240,12 @@ void CMOEAD::save_front(char saveFilename[4024])
           fout<<"\n";
       }
     }
-    for(int n=0; n < n_archive; n++)
-    {
-          for(int k=0;k<nobj;k++)
-             fout<<R2_pop[n][k]<<"  ";
-          fout<<"\n";
-    }
+//    for(int n=0; n < n_archive; n++)
+//    {
+//          for(int k=0;k<nobj;k++)
+//             fout<<R2_pop[n][k]<<"  ";
+//          fout<<"\n";
+//    }
     fout.close();
 }
 void CMOEAD::save_pos(char saveFilename[4024])
