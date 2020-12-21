@@ -139,7 +139,6 @@ bool CMOEAD::update_reference(vector<double> &point)
 }
 void CMOEAD::evol_population()
 {
-   
    for(auto id1:parent_idx) for(auto id2:child_idx) *(pointer_hyp(id1, id2))=-1;
    for(int i = 0; i < nOffspring; i++)
    {
@@ -179,11 +178,11 @@ void CMOEAD::evol_population()
            realmutation(child.x_var[k], 1.0/nvar);
            obj_eval(child.x_var[k], child.y_obj[k]);
            update_reference(child.y_obj[k]); 
-   //  	   R2_pop.push_back(child.y_obj[k]);
+     	   R2_pop.push_back(child.y_obj[k]);
      	   nfes++;
       }
-   //   if(R2_pop.size() >= 200) 
-   //   update_external_file(R2_pop);
+      if(R2_pop.size() >= 200) 
+      update_external_file(R2_pop);
    }
    replacement_phase();
 }
