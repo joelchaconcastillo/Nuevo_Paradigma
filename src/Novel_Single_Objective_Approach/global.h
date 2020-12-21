@@ -33,7 +33,8 @@ long long max_nfes;
 double *namda;
 ////Hungarian information
 double *cost_1, *cost_2, *cost_3;
-int *asg_1, *asg_2, *asg_3;
+int *hypermat_assig;//sort of lazy updating..
+//int *asg_1, *asg_2, *asg_3;
 Hungarian KM;
 struct strIndividual
 {
@@ -75,7 +76,7 @@ vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
   vector<vector<int> > domin_to(y_obj.size());
   vector<int> times_dominated(y_obj.size(), 0);
   vector<set<int> > fronts(1);
-   int current_rank = 0;
+  int current_rank = 0;
    for(int pidx1=0; pidx1 < y_obj.size(); pidx1++)
    {
       for(int pidx2=0; pidx2 < y_obj.size(); pidx2++)
