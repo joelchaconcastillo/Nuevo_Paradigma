@@ -118,9 +118,7 @@ void eval_R2(strIndividual &ind, int rank)
      {
        double minv = DBL_MAX;
        for(auto k:ind.fronts[rank])
-       {
            minv = min(minv, fitnessfunction(ind.y_obj[k], &namda[w*nobj]));
-       } 
        fit += minv;
      }
      ind.fitness.push_back(fit);
