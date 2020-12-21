@@ -129,7 +129,7 @@ void CMOEAD::init_population()
 	   child_idx.push_back(i);
 	nfes +=nInd;
      }
-     update_external_file(R2_pop);
+//     update_external_file(R2_pop);
      readf.close();
 }
 bool CMOEAD::update_reference(vector<double> &point)
@@ -219,7 +219,7 @@ void CMOEAD::exec_emo(int run)
 		evol_population();
 	}
 
-        update_external_file(R2_pop);
+        //update_external_file(R2_pop);
 	save_pos(filename1);
 	save_front(filename2);
 }
