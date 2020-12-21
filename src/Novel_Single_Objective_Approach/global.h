@@ -39,9 +39,9 @@ Hungarian KM;
 struct strIndividual
 {
     vector<vector<double> > x_var, y_obj;
-    vector<double>  fitness, changed;
-    vector<int> Np, prev_Np;
-    vector<unordered_set<int> > Sp, prev_Sp;
+    vector<double>  fitness;
+    vector<bool> changed;
+    vector<unordered_set<int> > fronts;
 };
 bool operator<(const vector<double> &y_obj1, const vector<double> &y_obj2)
 {
@@ -71,11 +71,11 @@ double fitnessfunction(vector <double> &y_obj, double *namda)
 	}
 	return max_fun;;
 }
-vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
+vector<unordered_set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
 {
   vector<vector<int> > domin_to(y_obj.size());
   vector<int> times_dominated(y_obj.size(), 0);
-  vector<set<int> > fronts(1);
+  vector<unordered_set<int> > fronts(1);
   int current_rank = 0;
    for(int pidx1=0; pidx1 < y_obj.size(); pidx1++)
    {
@@ -90,8 +90,7 @@ vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
          fronts[current_rank].insert(pidx1);
       }
   }
-  //ranking.... 
-  set<int> next_front;
+  unordered_set<int> next_front;
   while(true)
   {
      for(auto i:fronts[current_rank])
@@ -112,19 +111,13 @@ vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
   }
   return fronts;
 }
-void eval_R2(strIndividual &ind)
+void eval_R2(strIndividual &ind, int rank)
 {
-   set<int> cf;
-   for(int i = 0; i < nInd; i++) if(ind.Np[i] == 0) cf.insert(i), ind.Np[i]--;
-   for(auto idx:cf)
-      for(auto idd:ind.Sp[idx])
-	     ind.Np[idd]--;
-
      double fit = 0.0;
      for(int w = 0; w < nWeight; w++)
      {
        double minv = DBL_MAX;
-       for(auto k:cf)
+       for(auto k:ind.fronts[rank])
        {
            minv = min(minv, fitnessfunction(ind.y_obj[k], &namda[w*nobj]));
        } 

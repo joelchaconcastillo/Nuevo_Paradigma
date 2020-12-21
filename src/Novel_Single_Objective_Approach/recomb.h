@@ -12,7 +12,8 @@ void realmutation(vector<double> &x_var, double rate)
     int id_rnd = rand()%nvar;
     for (int j=0; j<nvar; j++)
     {
-        if (rnd_uni<=rate)
+        if (rnd_uni<=rate || id_rnd==j)
+        //if (rnd_uni<=rate)
         {
             y  = x_var[j];
             yl = vlowBound[j];
