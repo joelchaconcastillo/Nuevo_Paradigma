@@ -187,7 +187,7 @@ void CMOEAD::evol_population()
    {
       strIndividual &ind = pool[idx1];
       ind.fitness.clear();
-//      for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
+      for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
       for(auto idx2:child_idx) *(pointer_hyp(idx1, idx2))=-1, *(pointer_dist(idx1, idx2))=-1;
    }
    replacement_phase();
@@ -271,7 +271,7 @@ void CMOEAD::replacement_phase()
   auto compare_l = [&](const int &a, const int &b)->bool
   {
      strIndividual &ind_a = pool[a], &ind_b = pool[b];
-//	return (ind_a.fitness>ind_b.fitness);
+	return (ind_a.fitness>ind_b.fitness);
      int rank = 0, sf1 = ind_a.fronts.size(), sf2=ind_b.fronts.size();
      do{
 	if(ind_a.fitness.size() <= rank) {eval_R2(ind_a, rank); continue;}
