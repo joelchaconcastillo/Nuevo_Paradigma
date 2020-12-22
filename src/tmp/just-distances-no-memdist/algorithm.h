@@ -67,7 +67,7 @@ void CMOEAD::update_parameterD()
 double CMOEAD::distance_var(int a, int b)
 {
    double *distab=pointer_dist(a,b);
-//   if(*distab > 0.0) return *distab;
+   if(*distab > 0.0) return *distab;
    int *asg_1 = pointer_hyp(a,b);
    if(*asg_1==-1)
    {
@@ -102,7 +102,7 @@ void CMOEAD::init_population()
     hypermat_assig = new int[(nPop+nOffspring)*(nPop+nOffspring)*nInd];
     memset(hypermat_assig, -1, sizeof(int)*(nPop+nOffspring)*(nPop+nOffspring)*nInd);
     memo_dist = new double[(nPop+nOffspring)*(nPop+nOffspring)];
-    memset(memo_dist, -1, sizeof(double)*(nPop+nOffspring)*(nPop+nOffspring));
+    for(int i = 0; i < (nPop+nOffspring)*(nPop+nOffspring); i++) memo_dist[i] = -1;
 //  asg_1 = new int[nInd];
 //  asg_2 = new int[nInd];
 //  asg_3 = new int[nInd];
