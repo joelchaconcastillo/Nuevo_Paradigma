@@ -192,14 +192,20 @@ void CMOEAD::evol_population()
      	   R2_pop.push_back(child.y_obj[k]);
      	   nfes++;
       }
-      child.changed.assign(nInd, false);
-      child.fitness.clear();
-      child.fronts = non_dominated_sorting(child.y_obj);
-      for(int k = 0; k < child.fronts.size(); k++) eval_R2(child, k);
 
       if(R2_pop.size() >= 2*n_archive) 
       update_external_file(R2_pop);
    }
+
+    for(auto idx: child_idx)
+   {
+      strIndividual &child = pool[idx];
+      child.changed.assign(nInd, false);
+      child.fitness.clear();
+      child.fronts = non_dominated_sorting(child.y_obj);
+      for(int k = 0; k < child.fronts.size(); k++) eval_R2(child, k);
+   }
+
    replacement_phase();
 
 }
