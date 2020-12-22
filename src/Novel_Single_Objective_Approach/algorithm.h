@@ -203,7 +203,7 @@ void CMOEAD::evol_population()
       strIndividual &ind = pool[idx1];
       ind.fitness.clear();
      // for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
-      for(auto idx2:child_idx) *(pointer_hyp(idx1, idx2))=-1, *(pointer_dist(idx1, idx2))=-1;
+      for(auto idx2:child_idx) *(pointer_hyp(idx1, idx2))= *(pointer_hyp(idx2, idx1)) =-1, *(pointer_dist(idx1, idx2))=-1;
    }
    replacement_phase();
 
