@@ -32,6 +32,10 @@ class CMOEAD
 	double distance_var( int a, int b);
 	inline int* pointer_hyp(int a, int b){ if(a > b) swap(a, b);  return hypermat_assig +a*(nPop+nOffspring)*nInd + b*nInd; }
 	inline double* pointer_dist(int a, int b){ if(a > b) swap(a, b);  return memo_dist + a*(nPop+nOffspring) + b; }
+  	inline void get_cost(double *cost, vector<vector<double> > &set1, vector<vector<double> > &set2)
+        {
+	   for(int i = 0;i < nInd*nInd;i++) cost[i] = -distance_obj(set1[i/nInd], set2[i%nInd]);
+        }
 	vector <strIndividual> pool;
    private:
         
@@ -69,7 +73,7 @@ double CMOEAD::distance_var(int a, int b)
    //double *distab=pointer_dist(a,b);
    //if(*distab > 0.0) return *distab;
    int *asg_1 = pointer_hyp(a,b);
-//   if(*asg_1==-1)
+   if(*asg_1==-1)
    {
      for(int i = 0; i < nInd; i++)
       for(int j = 0; j < nInd; j++)
@@ -146,13 +150,6 @@ bool CMOEAD::update_reference(vector<double> &point)
 }
 void CMOEAD::evol_population()
 {
-//   for(int i = 0; i <pool.size(); i++){ for(int j = 0; j < pool.size(); j++) cout << *(pointer_hyp(i, j))<< "  "; cout << endl;} 
-//	cout << "===="<<endl;
-
-   for(int id1=0; id1<pool.size();id1++) for(auto id2:child_idx) *(pointer_hyp(id1, id2))=-1, *(pointer_dist(id1, id2))=-1;
-//   for(int i = 0; i <pool.size(); i++){ for(int j = 0; j < pool.size(); j++) cout << *(pointer_hyp(i, j))<< " "; cout << endl;} 
-//   getchar();
-
    for(int i = 0; i < nOffspring; i++)
    {
       int idx1=parent_idx[rand()% nPop], idx2=parent_idx[rand()%nPop], idx3=parent_idx[rand()%nPop], idx_target = parent_idx[i];
@@ -163,26 +160,11 @@ void CMOEAD::evol_population()
       strIndividual &child = pool[child_idx[i]], &ind0 = pool[idx_target], &ind1 = pool[idx1], &ind2 = pool[idx2], &ind3 = pool[idx3];
       child = ind0;
       int *asg_1  = pointer_hyp(idx_target, idx1) , *asg_2 =pointer_hyp(idx_target, idx2), *asg_3 = pointer_hyp(idx_target, idx3);
-//      if(*asg_1 == -1  || *asg_2 == -1 || *asg_3==-1)
-      {
-         for(int ii = 0; ii < nInd; ii++) //mating...
-           for(int jj = 0; jj < nInd; jj++)
-           {
-//		if(*asg_1 == -1)
-		 cost_1[ii*nInd+jj] = -distance_obj(ind0.y_obj[ii], ind1.y_obj[jj]);
-//		if(*asg_2 == -1)
-		 cost_2[ii*nInd+jj] = -distance_obj(ind0.y_obj[ii], ind2.y_obj[jj]);
-//		if(*asg_3 == -1)
-		 cost_3[ii*nInd+jj] = -distance_obj(ind0.y_obj[ii], ind3.y_obj[jj]);
-           }
-//	  if(*asg_1 == -1)
-		 KM.hungarian(cost_1, asg_1);
-  //        if(*asg_2 == -1)
-		 KM.hungarian(cost_2, asg_2);
-    //      if(*asg_3 == -1)
-		 KM.hungarian(cost_3, asg_3);
-      }
-       diff_evo_xoverA_exp(ind0, ind1, ind2, ind3, child, CR, F, asg_1, asg_2, asg_3);
+      if(*asg_1 == -1) get_cost(cost_1, ind0.y_obj, ind1.y_obj), KM.hungarian(cost_1, asg_1);
+      if(*asg_2 == -1) get_cost(cost_2, ind0.y_obj, ind1.y_obj), KM.hungarian(cost_2, asg_2);
+      if(*asg_3 == -1) get_cost(cost_3, ind0.y_obj, ind1.y_obj), KM.hungarian(cost_3, asg_3);
+
+      diff_evo_xoverA_exp(ind0, ind1, ind2, ind3, child, CR, F, asg_1, asg_2, asg_3);
 
       for(int k = 0; k < nInd; k++)
       {	
@@ -205,6 +187,7 @@ void CMOEAD::evol_population()
       ind.fitness.clear();
       for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
    }
+   for(int id1=0; id1<pool.size();id1++) for(auto id2:child_idx) *(pointer_hyp(id1, id2))=-1, *(pointer_dist(id1, id2))=-1;
    replacement_phase();
 
 }
