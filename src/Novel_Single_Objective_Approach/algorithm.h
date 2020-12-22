@@ -69,7 +69,7 @@ double CMOEAD::distance_var(int a, int b)
    //double *distab=pointer_dist(a,b);
    //if(*distab > 0.0) return *distab;
    int *asg_1 = pointer_hyp(a,b);
-   if(*asg_1==-1)
+//   if(*asg_1==-1)
    {
      for(int i = 0; i < nInd; i++)
       for(int j = 0; j < nInd; j++)
@@ -123,6 +123,9 @@ void CMOEAD::init_population()
              ind.x_var[k][n] = vlowBound[n] + rnd_uni*(vuppBound[n] - vlowBound[n]);     
 	    obj_eval(ind.x_var[k], ind.y_obj[k]), update_reference(ind.y_obj[k]), R2_pop.push_back(ind.y_obj[k]);
 	}
+
+        ind.fronts = non_dominated_sorting(ind.y_obj);
+        for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
 	pool.push_back(ind); 
 	if( i < nPop)
 	   parent_idx.push_back(i);
@@ -159,25 +162,24 @@ void CMOEAD::evol_population()
 
       strIndividual &child = pool[child_idx[i]], &ind0 = pool[idx_target], &ind1 = pool[idx1], &ind2 = pool[idx2], &ind3 = pool[idx3];
       child = ind0;
-      child.changed.assign(nInd, false);
       int *asg_1  = pointer_hyp(idx_target, idx1) , *asg_2 =pointer_hyp(idx_target, idx2), *asg_3 = pointer_hyp(idx_target, idx3);
 //      if(*asg_1 == -1  || *asg_2 == -1 || *asg_3==-1)
       {
-         for(int i = 0; i < nInd; i++) //mating...
-           for(int j = 0; j < nInd; j++)
+         for(int ii = 0; ii < nInd; ii++) //mating...
+           for(int jj = 0; jj < nInd; jj++)
            {
 //		if(*asg_1 == -1)
-		 cost_1[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind1.y_obj[j]);
+		 cost_1[ii*nInd+jj] = -distance_obj(ind0.y_obj[ii], ind1.y_obj[jj]);
 //		if(*asg_2 == -1)
-		 cost_2[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind2.y_obj[j]);
+		 cost_2[ii*nInd+jj] = -distance_obj(ind0.y_obj[ii], ind2.y_obj[jj]);
 //		if(*asg_3 == -1)
-		 cost_3[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
+		 cost_3[ii*nInd+jj] = -distance_obj(ind0.y_obj[ii], ind3.y_obj[jj]);
            }
 //	  if(*asg_1 == -1)
 		 KM.hungarian(cost_1, asg_1);
-     //     if(*asg_2 == -1)
+  //        if(*asg_2 == -1)
 		 KM.hungarian(cost_2, asg_2);
-       //   if(*asg_3 == -1)
+    //      if(*asg_3 == -1)
 		 KM.hungarian(cost_3, asg_3);
       }
        diff_evo_xoverA_exp(ind0, ind1, ind2, ind3, child, CR, F, asg_1, asg_2, asg_3);
@@ -190,6 +192,11 @@ void CMOEAD::evol_population()
      	   R2_pop.push_back(child.y_obj[k]);
      	   nfes++;
       }
+      child.changed.assign(nInd, false);
+      child.fitness.clear();
+      child.fronts = non_dominated_sorting(child.y_obj);
+      for(int k = 0; k < child.fronts.size(); k++) eval_R2(child, k);
+
       if(R2_pop.size() >= 2*n_archive) 
       update_external_file(R2_pop);
    }
@@ -275,20 +282,18 @@ void CMOEAD::replacement_phase()
   {
      strIndividual &ind_a = pool[a], &ind_b = pool[b];
 	return (ind_a.fitness>ind_b.fitness);
-//     int rank = 0, sf1 = ind_a.fronts.size(), sf2=ind_b.fronts.size();
-//     do{
-////	if(ind_a.fitness.size() <= rank) {eval_R2(ind_a, rank); continue;}
-////	if(ind_b.fitness.size() <= rank) {eval_R2(ind_b, rank); continue;}	
-//        if(ind_a.fitness[rank] > ind_b.fitness[rank]) return true;
-//        else if(ind_b.fitness[rank] > ind_a.fitness[rank]) return false;
-//        rank++;	
-//     }while(rank<nInd && rank < sf1 && rank <sf2);
+     int rank = 0, sf1 = ind_a.fronts.size(), sf2=ind_b.fronts.size();
+     do{
+	if(ind_a.fitness.size() <= rank) {eval_R2(ind_a, rank); continue;}
+	if(ind_b.fitness.size() <= rank) {eval_R2(ind_b, rank); continue;}	
+        if(ind_a.fitness[rank] > ind_b.fitness[rank]) return true;
+        else if(ind_b.fitness[rank] > ind_a.fitness[rank]) return false;
+        rank++;	
+     }while(rank<nInd && rank < sf1 && rank <sf2);
      return true;
   };
   unordered_set<int> penalized, survivors;
   priority_queue<int, vector<int>, decltype(compare_l)> candidates(compare_l);
-  //for(auto &ind:pool){ ind.fronts = non_dominated_sorting(ind.y_obj); ind.fitness.clear(); }
-  for(auto &ind:pool){ ind.fronts = non_dominated_sorting(ind.y_obj); int i =0 ;  for(auto idx:ind.fronts){ eval_R2(ind, i++);} }
   for(int i = 0; i < pool.size(); i++) candidates.push(i);
   while(!candidates.empty() && survivors.size() < nPop)
   {
