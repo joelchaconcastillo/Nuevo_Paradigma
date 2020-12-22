@@ -66,8 +66,8 @@ void CMOEAD::update_parameterD()
 }
 double CMOEAD::distance_var(int a, int b)
 {
-   //double *distab=pointer_dist(a,b);
-   //if(*distab > 0.0) return *distab;
+//   double *distab=pointer_dist(a,b);
+//   if(*distab > 0.0) return *distab;
    int *asg_1 = pointer_hyp(a,b);
    if(*asg_1==-1)
    {
@@ -85,7 +85,7 @@ double CMOEAD::distance_var(int a, int b)
          dist += factor*factor;
       }
    }
-   //(*distab) = sqrt(dist);
+//   (*distab) = sqrt(dist);
    return sqrt(dist);
 }
 void CMOEAD::init_population()
@@ -161,23 +161,23 @@ void CMOEAD::evol_population()
       child = ind0;
       child.changed.assign(nInd, false);
       int *asg_1  = pointer_hyp(idx_target, idx1) , *asg_2 =pointer_hyp(idx_target, idx2), *asg_3 = pointer_hyp(idx_target, idx3);
-//      if(*asg_1 == -1  || *asg_2 == -1 || *asg_3==-1)
+      if(*asg_1 == -1  || *asg_2 == -1 || *asg_3==-1)
       {
          for(int i = 0; i < nInd; i++) //mating...
            for(int j = 0; j < nInd; j++)
            {
-//		if(*asg_1 == -1)
+		if(*asg_1 == -1)
 		 cost_1[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind1.y_obj[j]);
-//		if(*asg_2 == -1)
+		if(*asg_2 == -1)
 		 cost_2[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind2.y_obj[j]);
-//		if(*asg_3 == -1)
+		if(*asg_3 == -1)
 		 cost_3[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
            }
-//	  if(*asg_1 == -1)
+	  if(*asg_1 == -1)
 		 KM.hungarian(cost_1, asg_1);
-     //     if(*asg_2 == -1)
+          if(*asg_2 == -1)
 		 KM.hungarian(cost_2, asg_2);
-       //   if(*asg_3 == -1)
+          if(*asg_3 == -1)
 		 KM.hungarian(cost_3, asg_3);
       }
        diff_evo_xoverA_exp(ind0, ind1, ind2, ind3, child, CR, F, asg_1, asg_2, asg_3);
