@@ -30,7 +30,8 @@ class CMOEAD
 	void update_parameterD();
 	void update_external_file(vector<vector<double> > &archive);
 	double distance_var( int a, int b);
-	inline int* pointer_hyp(int a, int b){ if(a > b) swap(a, b);  return hypermat_assig +a*(nPop+nOffspring)*nInd + b*nInd; }
+	//inline int* pointer_hyp(int a, int b){ if(a > b) swap(a, b);  return hypermat_assig +a*(nPop+nOffspring)*nInd + b*nInd; }
+	inline int* pointer_hyp(int a, int b){  return hypermat_assig +a*(nPop+nOffspring)*nInd + b*nInd; }
 	inline double* pointer_dist(int a, int b){ if(a > b) swap(a, b);  return memo_dist + a*(nPop+nOffspring) + b; }
   	inline void get_cost(double *cost, vector<vector<double> > &set1, vector<vector<double> > &set2)
         {
@@ -70,8 +71,8 @@ void CMOEAD::update_parameterD()
 }
 double CMOEAD::distance_var(int a, int b)
 {
-   //double *distab=pointer_dist(a,b);
-   //if(*distab > 0.0) return *distab;
+   double *distab=pointer_dist(a,b);
+   if(*distab > 0.0) return *distab;
    int *asg_1 = pointer_hyp(a,b);
    if(*asg_1==-1)
    {
@@ -89,7 +90,7 @@ double CMOEAD::distance_var(int a, int b)
          dist += factor*factor;
       }
    }
-   //(*distab) = sqrt(dist);
+   (*distab) = sqrt(dist);
    return sqrt(dist);
 }
 void CMOEAD::init_population()
@@ -181,13 +182,14 @@ void CMOEAD::evol_population()
       if(R2_pop.size() >= 2*n_archive) 
       update_external_file(R2_pop);
    }
-   //updating all R2 contributions cuz  reference vector has changed..
-   for(auto &ind:pool)
+   //updating all R2 contributions cuz reference vector has changed..
+   for(int idx1 = 0; idx1 < pool.size(); idx1++)
    {
+      strIndividual &ind = pool[idx1];
       ind.fitness.clear();
-      for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
+//      for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
+      for(auto idx2:child_idx) *(pointer_hyp(idx1, idx2))=-1, *(pointer_dist(idx1, idx2))=-1;
    }
-   for(int id1=0; id1<pool.size();id1++) for(auto id2:child_idx) *(pointer_hyp(id1, id2))=-1, *(pointer_dist(id1, id2))=-1;
    replacement_phase();
 
 }
@@ -269,7 +271,7 @@ void CMOEAD::replacement_phase()
   auto compare_l = [&](const int &a, const int &b)->bool
   {
      strIndividual &ind_a = pool[a], &ind_b = pool[b];
-	return (ind_a.fitness>ind_b.fitness);
+//	return (ind_a.fitness>ind_b.fitness);
      int rank = 0, sf1 = ind_a.fronts.size(), sf2=ind_b.fronts.size();
      do{
 	if(ind_a.fitness.size() <= rank) {eval_R2(ind_a, rank); continue;}
