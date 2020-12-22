@@ -143,8 +143,13 @@ bool CMOEAD::update_reference(vector<double> &point)
 }
 void CMOEAD::evol_population()
 {
-  
+//   for(int i = 0; i <pool.size(); i++){ for(int j = 0; j < pool.size(); j++) cout << *(pointer_hyp(i, j))<< "  "; cout << endl;} 
+//	cout << "===="<<endl;
+
    for(int id1=0; id1<pool.size();id1++) for(auto id2:child_idx) *(pointer_hyp(id1, id2))=-1, *(pointer_dist(id1, id2))=-1;
+//   for(int i = 0; i <pool.size(); i++){ for(int j = 0; j < pool.size(); j++) cout << *(pointer_hyp(i, j))<< " "; cout << endl;} 
+//   getchar();
+
    for(int i = 0; i < nOffspring; i++)
    {
       int idx1=parent_idx[rand()% nPop], idx2=parent_idx[rand()%nPop], idx3=parent_idx[rand()%nPop], idx_target = parent_idx[i];
@@ -269,19 +274,21 @@ void CMOEAD::replacement_phase()
   auto compare_l = [&](const int &a, const int &b)->bool
   {
      strIndividual &ind_a = pool[a], &ind_b = pool[b];
-     int rank = 0, sf1 = ind_a.fronts.size(), sf2=ind_b.fronts.size();
-     do{
-	if(ind_a.fitness.size() <= rank) {eval_R2(ind_a, rank); continue;}
-	if(ind_b.fitness.size() <= rank) {eval_R2(ind_b, rank); continue;}	
-        if(ind_a.fitness[rank] > ind_b.fitness[rank]) return true;
-        else if(ind_b.fitness[rank] > ind_a.fitness[rank]) return false;
-        rank++;	
-     }while(rank<nInd && rank < sf1 && rank <sf2);
+	return (ind_a.fitness>ind_b.fitness);
+//     int rank = 0, sf1 = ind_a.fronts.size(), sf2=ind_b.fronts.size();
+//     do{
+////	if(ind_a.fitness.size() <= rank) {eval_R2(ind_a, rank); continue;}
+////	if(ind_b.fitness.size() <= rank) {eval_R2(ind_b, rank); continue;}	
+//        if(ind_a.fitness[rank] > ind_b.fitness[rank]) return true;
+//        else if(ind_b.fitness[rank] > ind_a.fitness[rank]) return false;
+//        rank++;	
+//     }while(rank<nInd && rank < sf1 && rank <sf2);
      return true;
   };
   unordered_set<int> penalized, survivors;
   priority_queue<int, vector<int>, decltype(compare_l)> candidates(compare_l);
-  for(auto &ind:pool){ ind.fronts = non_dominated_sorting(ind.y_obj); ind.fitness.clear(); }
+  //for(auto &ind:pool){ ind.fronts = non_dominated_sorting(ind.y_obj); ind.fitness.clear(); }
+  for(auto &ind:pool){ ind.fronts = non_dominated_sorting(ind.y_obj); int i =0 ;  for(auto idx:ind.fronts){ eval_R2(ind, i++);} }
   for(int i = 0; i < pool.size(); i++) candidates.push(i);
   while(!candidates.empty() && survivors.size() < nPop)
   {
