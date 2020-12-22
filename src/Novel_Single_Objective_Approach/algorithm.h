@@ -85,7 +85,8 @@ double CMOEAD::distance_var(int a, int b)
          dist += factor*factor;
       }
    }
-   return (*distab) = sqrt(dist);
+   (*distab) = sqrt(dist);
+   return sqrt(dist);
 }
 void CMOEAD::init_population()
 {
@@ -402,7 +403,6 @@ void CMOEAD::update_external_file(vector<vector<double> > &archive)
   {
       pair<double, int> min_info(10000000, -1);
       //take the worst contribution-individual..                   
-      for(int idx = 0; idx < selected.size(); idx++)
       for(auto idx:selected)
       {
          if(min_info.first > contribution_R2[idx])
