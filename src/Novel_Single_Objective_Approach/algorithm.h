@@ -183,6 +183,7 @@ void CMOEAD::evol_population()
 		 KM.hungarian(cost_3, asg_3);
       }
        diff_evo_xoverA_exp(ind0, ind1, ind2, ind3, child, CR, F, asg_1, asg_2, asg_3);
+
       for(int k = 0; k < nInd; k++)
       {	
 	   if(!child.changed[k])continue;
@@ -192,20 +193,18 @@ void CMOEAD::evol_population()
      	   R2_pop.push_back(child.y_obj[k]);
      	   nfes++;
       }
+      child.changed.assign(nInd, false);
+      child.fronts = non_dominated_sorting(child.y_obj);
 
       if(R2_pop.size() >= 2*n_archive) 
       update_external_file(R2_pop);
    }
-
-    for(auto idx: child_idx)
+   //updating all R2 contributions cuz  reference vector has changed..
+   for(auto &ind:pool)
    {
-      strIndividual &child = pool[idx];
-      child.changed.assign(nInd, false);
-      child.fitness.clear();
-      child.fronts = non_dominated_sorting(child.y_obj);
-      for(int k = 0; k < child.fronts.size(); k++) eval_R2(child, k);
+      ind.fitness.clear();
+      for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
    }
-
    replacement_phase();
 
 }
