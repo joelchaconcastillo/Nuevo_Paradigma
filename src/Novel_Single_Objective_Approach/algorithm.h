@@ -161,6 +161,7 @@ void CMOEAD::evol_population()
       strIndividual &child = pool[child_idx[i]], &ind0 = pool[idx_target], &ind1 = pool[idx1], &ind2 = pool[idx2], &ind3 = pool[idx3];
       child = ind0;
       int *asg_1  = pointer_hyp(idx_target, idx1) , *asg_2 = pointer_hyp(idx_target, idx2), *asg_3 = pointer_hyp(idx_target, idx3);
+      *asg_1  = *asg_2 = *asg_3=-1;
       if( *asg_1 == -1 || *asg_2 == -1 || *asg_3 == -1)
       {
           for(int ii = 0; ii < nInd; ii++)
@@ -176,7 +177,6 @@ void CMOEAD::evol_population()
         if(*asg_1 == -1) KM.hungarian(cost_1, asg_1);
       	if(*asg_2 == -1) KM.hungarian(cost_2, asg_2);
       	if(*asg_3 == -1) KM.hungarian(cost_3, asg_3);
-
    //   if(*asg_1 == -1) get_cost(cost_1, ind0.y_obj, ind1.y_obj), KM.hungarian(cost_1, asg_1);
    //   if(*asg_2 == -1) get_cost(cost_2, ind0.y_obj, ind2.y_obj), KM.hungarian(cost_2, asg_2);
    //   if(*asg_3 == -1) get_cost(cost_3, ind0.y_obj, ind3.y_obj), KM.hungarian(cost_3, asg_3);
@@ -202,11 +202,10 @@ void CMOEAD::evol_population()
    {
       strIndividual &ind = pool[idx1];
       ind.fitness.clear();
-     // for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
+      for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
       for(auto idx2:child_idx) *(pointer_hyp(idx1, idx2))= *(pointer_hyp(idx2, idx1)) =-1, *(pointer_dist(idx1, idx2))=-1;
    }
    replacement_phase();
-
 }
 void CMOEAD::exec_emo(int run)
 {
@@ -286,7 +285,7 @@ void CMOEAD::replacement_phase()
   auto compare_l = [&](const int &a, const int &b)->bool
   {
      strIndividual &ind_a = pool[a], &ind_b = pool[b];
-//	return (ind_a.fitness>ind_b.fitness);
+	return (ind_a.fitness>ind_b.fitness);
      int rank = 0, sf1 = ind_a.fronts.size(), sf2=ind_b.fronts.size();
      do{
 	if(ind_a.fitness.size() <= rank) {eval_R2(ind_a, rank); continue;}
