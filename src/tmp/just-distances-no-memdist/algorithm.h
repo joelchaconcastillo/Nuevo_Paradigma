@@ -30,7 +30,7 @@ class CMOEAD
 	void update_parameterD();
 	void update_external_file(vector<vector<double> > &archive);
 	double distance_var( int a, int b);
-	inline int* pointer_hyp(int a, int b){ if(a > b) swap(a, b);  return hypermat_assig +a*(nPop+nOffspring)*nInd + b*nInd; }
+	inline int* pointer_hyp(int a, int b){ if(a > b) swap(a, b); return hypermat_assig +a*(nPop+nOffspring)*nInd + b*nInd; }
 	inline double* pointer_dist(int a, int b){ if(a > b) swap(a, b);  return memo_dist + a*(nPop+nOffspring) + b; }
 	vector <strIndividual> pool;
    private:
@@ -145,8 +145,6 @@ bool CMOEAD::update_reference(vector<double> &point)
 }
 void CMOEAD::evol_population()
 {
-
-   for(auto id1:parent_idx) for(auto id2:child_idx) *(pointer_hyp(id1, id2))=-1, *(pointer_dist(id1, id2))=-1;
    for(int i = 0; i < nOffspring; i++)
    {
       int idx1=parent_idx[rand()% nPop], idx2=parent_idx[rand()%nPop], idx3=parent_idx[rand()%nPop], idx_target = parent_idx[i];
@@ -191,7 +189,6 @@ void CMOEAD::evol_population()
       update_external_file(R2_pop);
    }
    replacement_phase();
-
 }
 void CMOEAD::exec_emo(int run)
 {

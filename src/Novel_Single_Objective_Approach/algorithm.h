@@ -142,8 +142,8 @@ bool CMOEAD::update_reference(vector<double> &point)
 }
 void CMOEAD::evol_population()
 {
-
-   for(auto id1:parent_idx) for(auto id2:child_idx) *(pointer_hyp(id1, id2))=-1, *(pointer_dist(id1, id2))=-1;
+  
+   for(int id1=0; id1<pool.size();id1++) for(auto id2:child_idx) *(pointer_hyp(id1, id2))=-1, *(pointer_dist(id1, id2))=-1;
    for(int i = 0; i < nOffspring; i++)
    {
       int idx1=parent_idx[rand()% nPop], idx2=parent_idx[rand()%nPop], idx3=parent_idx[rand()%nPop], idx_target = parent_idx[i];
