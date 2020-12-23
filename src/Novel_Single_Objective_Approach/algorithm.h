@@ -71,8 +71,8 @@ void CMOEAD::update_parameterD()
 }
 double CMOEAD::distance_var(int a, int b)
 {
-//   double *distab=pointer_dist(a,b);
-//   if(*distab > 0.0) return *distab;
+   double *distab=pointer_dist(a,b);
+   if(*distab > 0.0) return *distab;
    int *asg_1 = pointer_hyp(a,b);
    if(*asg_1==-1)
    {
@@ -90,7 +90,7 @@ double CMOEAD::distance_var(int a, int b)
          dist += factor*factor;
       }
    }
-//   (*distab) = sqrt(dist);
+   (*distab) = sqrt(dist);
    return sqrt(dist);
 }
 void CMOEAD::init_population()
