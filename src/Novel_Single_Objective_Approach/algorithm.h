@@ -161,7 +161,7 @@ void CMOEAD::evol_population()
       strIndividual &child = pool[child_idx[i]], &ind0 = pool[idx_target], &ind1 = pool[idx1], &ind2 = pool[idx2], &ind3 = pool[idx3];
       child = ind0;
       int *asg_1  = pointer_hyp(idx_target, idx1) , *asg_2 = pointer_hyp(idx_target, idx2), *asg_3 = pointer_hyp(idx_target, idx3);
-      *asg_1  = *asg_2 = *asg_3=-1;
+   //   *asg_1  = *asg_2 = *asg_3=-1;
       if( *asg_1 == -1 || *asg_2 == -1 || *asg_3 == -1)
       {
           for(int ii = 0; ii < nInd; ii++)
