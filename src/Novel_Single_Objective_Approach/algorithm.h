@@ -258,7 +258,7 @@ void CMOEAD::save_front(char saveFilename[4024])
           fout<<"\n";
       }
     }
-    for(int n=0; n < n_archive; n++)
+    for(int n=0; n < R2_pop.size(); n++)
     {
           for(int k=0;k<nobj;k++)
              fout<<R2_pop[n][k]<<"  ";
