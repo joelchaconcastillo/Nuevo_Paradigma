@@ -63,10 +63,9 @@ void CMOEAD::update_parameterD()
 }
 double CMOEAD::distance_var(int a, int b)
 {
-   //double *distab=pointer_dist(a,b);
-   //if(*distab > 0.0) return *distab;
+   double *distab=pointer_dist(a,b);
+   if(*distab > 0.0) return *distab;
    int *asg_1 = pointer_hyp(a,b);
-   *asg_1=-1;
    if(*asg_1==-1)
    {
      for(int i = 0; i < nInd; i++)
@@ -83,7 +82,7 @@ double CMOEAD::distance_var(int a, int b)
          dist += factor*factor;
       }
    }
-//   (*distab) = sqrt(dist);
+   (*distab) = sqrt(dist);
    return sqrt(dist);
 }
 CMOEAD::~CMOEAD()
@@ -215,7 +214,6 @@ void CMOEAD::evol_population()
       for(int n = 0; n < nvar*nInd; n++)   pool[c_idx].x_var[n] = pool[idx_target].x_var[n];
 
       int *asg_1  = pointer_hyp(idx_target, idx1) , *asg_2 = pointer_hyp(idx_target, idx2), *asg_3 = pointer_hyp(idx_target, idx3);
-      *asg_1 = *asg_2 = *asg_3 = -1;
       if( *asg_1 == -1 || *asg_2 == -1 || *asg_3 == -1)
       {
           for(int ii = 0; ii < nInd; ii++)
