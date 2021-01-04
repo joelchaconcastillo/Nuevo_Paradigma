@@ -7,6 +7,7 @@
 #include <map>
 #include <unordered_set>
 #include <iomanip>
+#include <iterator>
 #include "global.h"
 #include "recomb.h"
 #include "problem.h"
@@ -29,16 +30,18 @@ class CMOEAD
 	void update_parameterD();
 	void update_external_file(vector<vector<double> > &archive);
 	double distance_var( int a, int b);
-
-   private:
-        struct compare
+	//inline int* pointer_hyp(int a, int b){ if(a > b) swap(a, b);  return hypermat_assig +a*(nPop+nOffspring)*nInd + b*nInd; }
+	inline int* pointer_hyp(int a, int b){  return hypermat_assig +a*(nPop+nOffspring)*nInd + b*nInd; }
+	inline double* pointer_dist(int a, int b){ if(a > b) swap(a, b);  return memo_dist + a*(nPop+nOffspring) + b; }
+  	inline void get_cost(double *cost, vector<vector<double> > &set1, vector<vector<double> > &set2)
         {
-	   bool operator()(const pair<vector<double>, int> &a, const pair<vector<double>, int> &b){return b.first<<a.first; }
-        };
+	   for(int i = 0;i < nInd*nInd;i++) cost[i] = -distance_obj(set1[i/nInd], set2[i%nInd]);
+        }
 	vector <strIndividual> pool;
-	vector<int> child_idx, parent_idx, inv_parent_idx;
+   private:
+        
+	vector<int> child_idx, parent_idx, inv_parent_idx; 
 	vector<vector<double> > R2_pop;     // weight vector
-
 	// algorithm parameters
 	long long nfes;          //  the number of function evluations
 	double	D;	//Current minimum distance
@@ -54,10 +57,11 @@ CMOEAD::~CMOEAD()
    delete[] cost_1;
    delete[] cost_2;
    delete[] cost_3;
-   delete[] asg_1; 
-   delete[] asg_2;
-   delete[] asg_3;
-
+//   delete[] asg_1; 
+//   delete[] asg_2;
+//   delete[] asg_3;
+   delete[] hypermat_assig;
+   delete[] memo_dist;
 }
 void CMOEAD::update_parameterD()
 {
@@ -67,10 +71,16 @@ void CMOEAD::update_parameterD()
 }
 double CMOEAD::distance_var(int a, int b)
 {
-    for(int i = 0; i < nInd; i++)
+   double *distab=pointer_dist(a,b);
+   if(*distab > 0.0) return *distab;
+   int *asg_1 = pointer_hyp(a,b);
+   if(*asg_1==-1)
+   {
+     for(int i = 0; i < nInd; i++)
       for(int j = 0; j < nInd; j++)
-	cost_1[i*nInd+j] = -distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
-    KM.hungarian(cost_1, asg_1);
+       cost_1[i*nInd+j] = -distance_obj(pool[a].y_obj[i], pool[b].y_obj[j]);
+     KM.hungarian(cost_1, asg_1);
+   }
    double dist = 0.0;
    for(int i = 0; i < nInd; i++)
    {
@@ -80,6 +90,7 @@ double CMOEAD::distance_var(int a, int b)
          dist += factor*factor;
       }
    }
+   (*distab) = sqrt(dist);
    return sqrt(dist);
 }
 void CMOEAD::init_population()
@@ -94,22 +105,21 @@ void CMOEAD::init_population()
     cost_1 = new double[nInd*nInd];
     cost_2 = new double[nInd*nInd];
     cost_3 = new double[nInd*nInd];
-    asg_1 = new int[nInd];
-    asg_2 = new int[nInd];
-    asg_3 = new int[nInd];
+    hypermat_assig = new int[(nPop+nOffspring)*(nPop+nOffspring)*nInd];
+    memset(hypermat_assig, -1, sizeof(int)*(nPop+nOffspring)*(nPop+nOffspring)*nInd);
+    memo_dist = new double[(nPop+nOffspring)*(nPop+nOffspring)];
+    for(int i = 0; i < (nPop+nOffspring)*(nPop+nOffspring); i++) memo_dist[i]=-1;
 
     n_archive=100;
     // Load weight vectors
     for(int i=0; i< nWeight; i++)
 	for(int j=0; j<nobj; j++)
 	 readf>>namda[i*nobj + j];
-
     for(int i=0; i< nPop+nOffspring; i++)
     {
         strIndividual ind;
         ind.x_var.assign(nInd, vector<double>(nvar, 0));
         ind.y_obj.assign(nInd, vector<double>(nobj, 0));
-	ind.fitness.assign(nInd, 0);
 	ind.changed.assign(nInd, false);
 	// random initialization..
         for(int k= 0; k < nInd; k++)
@@ -118,7 +128,9 @@ void CMOEAD::init_population()
              ind.x_var[k][n] = vlowBound[n] + rnd_uni*(vuppBound[n] - vlowBound[n]);     
 	    obj_eval(ind.x_var[k], ind.y_obj[k]), update_reference(ind.y_obj[k]), R2_pop.push_back(ind.y_obj[k]);
 	}
-	// Save in the population
+
+        ind.fronts = non_dominated_sorting(ind.y_obj);
+        for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
 	pool.push_back(ind); 
 	if( i < nPop)
 	   parent_idx.push_back(i);
@@ -142,23 +154,34 @@ void CMOEAD::evol_population()
    for(int i = 0; i < nOffspring; i++)
    {
       int idx1=parent_idx[rand()% nPop], idx2=parent_idx[rand()%nPop], idx3=parent_idx[rand()%nPop], idx_target = parent_idx[i];
-      while(idx1 == i) idx1=parent_idx[rand()%nPop];
-      while(idx2 == idx1 || idx2 == i) idx2=parent_idx[rand()%nPop];
-      while(idx3 == idx2 || idx3 == idx1 || idx3 == i) idx3=parent_idx[rand()%nPop];
+      while(idx1 == idx_target) idx1=parent_idx[rand()%nPop];
+      while(idx2 == idx1 || idx2 == idx_target) idx2=parent_idx[rand()%nPop];
+      while(idx3 == idx2 || idx3 == idx1 || idx3 == idx_target) idx3=parent_idx[rand()%nPop];
+
       strIndividual &child = pool[child_idx[i]], &ind0 = pool[idx_target], &ind1 = pool[idx1], &ind2 = pool[idx2], &ind3 = pool[idx3];
       child = ind0;
-      child.changed.assign(nInd, false);
-      for(int i = 0; i < nInd; i++) //mating...
-        for(int j = 0; j < nInd; j++)
-        {
-	         cost_1[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind1.y_obj[j]);
-	         cost_2[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind2.y_obj[j]);
-	         cost_3[i*nInd+j] = -distance_obj(ind0.y_obj[i], ind3.y_obj[j]);
-        }
-       KM.hungarian(cost_1, asg_1);
-       KM.hungarian(cost_2, asg_2);
-       KM.hungarian(cost_3, asg_3);
-       diff_evo_xoverA_exp(ind0, ind1, ind2, ind3, child, CR, F, asg_1, asg_2, asg_3);
+      int *asg_1  = pointer_hyp(idx_target, idx1) , *asg_2 = pointer_hyp(idx_target, idx2), *asg_3 = pointer_hyp(idx_target, idx3);
+   //   *asg_1  = *asg_2 = *asg_3=-1;
+      if( *asg_1 == -1 || *asg_2 == -1 || *asg_3 == -1)
+      {
+          for(int ii = 0; ii < nInd; ii++)
+          {
+         	for(int jj = 0; jj < nInd; jj++)
+         	{
+        	   if(*asg_1 == -1) cost_1[ii*nInd+jj] =-distance_obj(ind0.y_obj[ii], ind1.y_obj[jj]);
+        	   if(*asg_2 == -1) cost_2[ii*nInd+jj] =-distance_obj(ind0.y_obj[ii], ind2.y_obj[jj]);
+        	   if(*asg_3 == -1) cost_3[ii*nInd+jj] =-distance_obj(ind0.y_obj[ii], ind3.y_obj[jj]);
+         	}
+          }
+      }
+        if(*asg_1 == -1) KM.hungarian(cost_1, asg_1);
+      	if(*asg_2 == -1) KM.hungarian(cost_2, asg_2);
+      	if(*asg_3 == -1) KM.hungarian(cost_3, asg_3);
+   //   if(*asg_1 == -1) get_cost(cost_1, ind0.y_obj, ind1.y_obj), KM.hungarian(cost_1, asg_1);
+   //   if(*asg_2 == -1) get_cost(cost_2, ind0.y_obj, ind2.y_obj), KM.hungarian(cost_2, asg_2);
+   //   if(*asg_3 == -1) get_cost(cost_3, ind0.y_obj, ind3.y_obj), KM.hungarian(cost_3, asg_3);
+      diff_evo_xoverA_exp(ind0, ind1, ind2, ind3, child, CR, F, asg_1, asg_2, asg_3);
+
       for(int k = 0; k < nInd; k++)
       {	
 	   if(!child.changed[k])continue;
@@ -168,9 +191,20 @@ void CMOEAD::evol_population()
      	   R2_pop.push_back(child.y_obj[k]);
      	   nfes++;
       }
+      child.changed.assign(nInd, false);
+      child.fronts = non_dominated_sorting(child.y_obj);
+
+      if(R2_pop.size() >= 2*n_archive) 
+      update_external_file(R2_pop);
    }
-   if(R2_pop.size() >= 200) 
-   update_external_file(R2_pop);
+   //updating all R2 contributions cuz reference vector has changed..
+   for(int idx1 = 0; idx1 < pool.size(); idx1++)
+   {
+      strIndividual &ind = pool[idx1];
+      ind.fitness.clear();
+//      for(int k = 0; k < ind.fronts.size(); k++) eval_R2(ind, k);
+      for(auto idx2:child_idx) *(pointer_hyp(idx1, idx2))= *(pointer_hyp(idx2, idx1)) =-1, *(pointer_dist(idx1, idx2))=-1;
+   }
    replacement_phase();
 }
 void CMOEAD::exec_emo(int run)
@@ -224,7 +258,7 @@ void CMOEAD::save_front(char saveFilename[4024])
           fout<<"\n";
       }
     }
-    for(int n=0; n < n_archive; n++)
+    for(int n=0; n < R2_pop.size(); n++)
     {
           for(int k=0;k<nobj;k++)
              fout<<R2_pop[n][k]<<"  ";
@@ -248,19 +282,29 @@ void CMOEAD::save_pos(char saveFilename[4024])
 }
 void CMOEAD::replacement_phase()
 {
-  unordered_set<int> penalized, survivors;
-  priority_queue<pair<vector<double>, int>, vector<pair<vector<double>, int>>, compare> candidates;
-  for(int i = 0; i < pool.size(); i++)
+  auto compare_l = [&](const int &a, const int &b)->bool
   {
-    eval_R2(pool[i].y_obj, pool[i].fitness);
-    candidates.push(make_pair(pool[i].fitness, i));
-  }
+     strIndividual &ind_a = pool[a], &ind_b = pool[b];
+//	return (ind_a.fitness>ind_b.fitness);
+     int rank = 0, sf1 = ind_a.fronts.size(), sf2=ind_b.fronts.size();
+     do{
+	if(ind_a.fitness.size() <= rank) {eval_R2(ind_a, rank); continue;}
+	if(ind_b.fitness.size() <= rank) {eval_R2(ind_b, rank); continue;}	
+        if(ind_a.fitness[rank] > ind_b.fitness[rank]) return true;
+        else if(ind_b.fitness[rank] > ind_a.fitness[rank]) return false;
+        rank++;	
+     }while(rank<nInd && rank < sf1 && rank <sf2);
+     return false;
+  };
+  unordered_set<int> penalized, survivors;
+  priority_queue<int, vector<int>, decltype(compare_l)> candidates(compare_l);
+  for(int i = 0; i < pool.size(); i++) candidates.push(i);
   while(!candidates.empty() && survivors.size() < nPop)
   {
-     int idx = candidates.top().second; candidates.pop();
+     int idx = candidates.top(); candidates.pop();
      bool flagIsSurvivor=true;
      for(auto s:survivors) 
-	if(distance_var(s, idx) < D){flagIsSurvivor = false; break;}
+	if(distance_var(s, idx) <= D){flagIsSurvivor = false; break;}
      if(flagIsSurvivor)
 	survivors.insert(idx);
      else penalized.insert(idx);
@@ -287,48 +331,6 @@ void CMOEAD::replacement_phase()
      checked[s] = true;
   }
   for(int i = 0, j=0; i < pool.size(); i++) if(!checked[i]) child_idx[j++] = i;
-}
-void CMOEAD::update_external_file(vector<vector<double> > &archive)
-{
-  vector<int> multiset_R2((int)archive.size());
-  for(int i = 0 ; i < multiset_R2.size(); i++) multiset_R2[i]=i;
-
-  vector<double> contribution_R2(multiset_R2.size(), 0);
-  vector< vector<double> > fitness_table(nWeight, vector<double>(multiset_R2.size()));
-  vector< set<pair<double, int> > > w_set(nWeight);
-  for(int w_idx = 0; w_idx < nWeight; w_idx++)
-  {
-      for(auto idx:multiset_R2)
-      {
-          double gx = fitnessfunction(archive[idx], &namda[w_idx*nobj]);//atof(sz);
-         fitness_table[w_idx][idx] = gx;
-         w_set[w_idx].insert(make_pair(gx, idx));
-      }
-      contribution_R2[w_set[w_idx].begin()->second] += (next(w_set[w_idx].begin(), 1)->first - next(w_set[w_idx].begin(), 0)->first);
-  }
-  while(multiset_R2.size() > n_archive)
-  {
-      pair<double, int> min_info(10000000, -1);
-      //take the worst contribution-individual..                   
-      for(int idx = 0; idx < multiset_R2.size(); idx++)
-      {
-         if(min_info.first > contribution_R2[multiset_R2[idx]])
-           min_info = make_pair(contribution_R2[multiset_R2[idx]], idx);
-      }
-     //update contributions... 
-     contribution_R2.assign(archive.size(), 0.0);
-     for(int w_idx = 0; w_idx < nWeight; w_idx++)
-     {
-        w_set[w_idx].erase(make_pair(fitness_table[w_idx][multiset_R2[min_info.second]], multiset_R2[min_info.second]));
-
-        contribution_R2[w_set[w_idx].begin()->second] += (next(w_set[w_idx].begin(), 1)->first - next(w_set[w_idx].begin(), 0)->first);
-     }
-     iter_swap(multiset_R2.begin()+min_info.second, multiset_R2.end()-1);
-     multiset_R2.pop_back();
-  }
-  vector<vector<double > > tmp = archive;
-  archive.resize(n_archive);
-  for(int i = 0; i < n_archive; i++) archive[i]=tmp[multiset_R2[i]];
 }
 void CMOEAD::obj_eval(vector<double> &x_var, vector<double> &y_obj)
 {
@@ -358,5 +360,81 @@ void CMOEAD::obj_eval(vector<double> &x_var, vector<double> &y_obj)
   else if(!strcmp("DTLZ5", strTestInstance))  dtlz5(y_obj, x_var);
   else if(!strcmp("DTLZ6", strTestInstance))  dtlz6(y_obj, x_var);
   else if(!strcmp("DTLZ7", strTestInstance))  dtlz7(y_obj, x_var);
+}
+//void CMOEAD::update_external_file(vector<vector<double> > &archive)
+//{
+//  vector<int> multiset_R2((int)archive.size());
+//  for(int i = 0 ; i < multiset_R2.size(); i++) multiset_R2[i]=i;
+//
+//  vector<double> contribution_R2(multiset_R2.size(), 0);
+//  vector< vector<double> > fitness_table(nWeight, vector<double>(multiset_R2.size()));
+//  vector< set<pair<double, int> > > w_set(nWeight);
+//  for(int w_idx = 0; w_idx < nWeight; w_idx++)
+//  {
+//      for(auto idx:multiset_R2)
+//      {
+//          double gx = fitnessfunction(archive[idx], &namda[w_idx*nobj]);//atof(sz);
+//         fitness_table[w_idx][idx] = gx;
+//         w_set[w_idx].insert(make_pair(gx, idx));
+//      }
+//      contribution_R2[w_set[w_idx].begin()->second] += (next(w_set[w_idx].begin(), 1)->first - next(w_set[w_idx].begin(), 0)->first);
+//  }
+//  while(multiset_R2.size() > n_archive)
+//  {
+//      pair<double, int> min_info(10000000, -1);
+//      //take the worst contribution-individual..                   
+//      for(int idx = 0; idx < multiset_R2.size(); idx++)
+//      {
+//         if(min_info.first > contribution_R2[multiset_R2[idx]])
+//           min_info = make_pair(contribution_R2[multiset_R2[idx]], idx);
+//      }
+//     //update contributions... 
+//     contribution_R2.assign(archive.size(), 0.0);
+//     for(int w_idx = 0; w_idx < nWeight; w_idx++)
+//     {
+//        w_set[w_idx].erase(make_pair(fitness_table[w_idx][multiset_R2[min_info.second]], multiset_R2[min_info.second]));
+//
+//        contribution_R2[w_set[w_idx].begin()->second] += (next(w_set[w_idx].begin(), 1)->first - next(w_set[w_idx].begin(), 0)->first);
+//     }
+//     iter_swap(multiset_R2.begin()+min_info.second, multiset_R2.end()-1);
+//     multiset_R2.pop_back();
+//  }
+//  vector<vector<double > > tmp = archive;
+//  archive.resize(n_archive);
+//  for(int i = 0; i < n_archive; i++) archive[i]=tmp[multiset_R2[i]];
+//}
+void CMOEAD::update_external_file(vector<vector<double> > &archive)
+{
+  unordered_set<int> selected = non_dominated_sorting(archive)[0];
+
+  vector<double> contribution_R2(archive.size(), 0.0);
+  vector< set<pair<double, int> > > w_set(nWeight);
+  for(int w_idx = 0; w_idx < nWeight; w_idx++)
+  {
+      for(auto idx:selected)
+         w_set[w_idx].insert(make_pair(fitnessfunction(archive[idx], &namda[w_idx*nobj]), idx));
+      contribution_R2[w_set[w_idx].begin()->second] += (next(w_set[w_idx].begin(), 1)->first - next(w_set[w_idx].begin(), 0)->first);
+  }
+  while(selected.size() > n_archive)
+  {
+      pair<double, int> min_info(10000000, -1);
+      //take the worst contribution-individual..                   
+      for(auto idx:selected)
+      {
+         if(min_info.first > contribution_R2[idx])
+           min_info = make_pair(contribution_R2[idx], idx);
+      }
+     //update contributions... 
+     contribution_R2.assign(archive.size(), 0.0);
+     for(int w_idx = 0; w_idx < nWeight; w_idx++)
+     {
+        w_set[w_idx].erase(make_pair(fitnessfunction(archive[min_info.second], &namda[w_idx*nobj]), min_info.second));
+        contribution_R2[w_set[w_idx].begin()->second] += (next(w_set[w_idx].begin(), 1)->first - next(w_set[w_idx].begin(), 0)->first);
+     }
+     selected.erase(min_info.second);
+  }
+  vector<vector<double> > tmp = archive;
+  archive.clear();
+  for(auto idx:selected) archive.push_back(tmp[idx]);
 }
 #endif

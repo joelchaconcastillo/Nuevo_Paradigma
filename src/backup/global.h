@@ -32,13 +32,16 @@ int nInd, nPop, nOffspring, nWeight;
 long long max_nfes;
 double *namda;
 ////Hungarian information
-double *cost_1, *cost_2, *cost_3;
-int *asg_1, *asg_2, *asg_3;
+double *cost_1, *cost_2, *cost_3, *memo_dist;
+int *hypermat_assig;//sort of lazy updating..
+//int *asg_1, *asg_2, *asg_3;
 Hungarian KM;
 struct strIndividual
 {
     vector<vector<double> > x_var, y_obj;
-    vector<double>  fitness, changed;
+    vector<double>  fitness;
+    vector<bool> changed;
+    vector<unordered_set<int> > fronts;
 };
 bool operator<(const vector<double> &y_obj1, const vector<double> &y_obj2)
 {
@@ -47,17 +50,6 @@ bool operator<(const vector<double> &y_obj1, const vector<double> &y_obj2)
         if(y_obj2[n]<y_obj1[n]) return false;
     }
     if(y_obj1==y_obj2) return false;
-    return true;
-}
-bool operator<<(const vector<double> &y_obj1, const vector<double> &y_obj2)
-{
-    for(int n=0; n< y_obj1.size(); n++)
-    {
-	if(y_obj1[n]<y_obj2[n])
-	 return true; 
-        else if(y_obj1[n]>y_obj2[n])
-	 return false;
-    }
     return true;
 }
 double distance_obj(vector<double> &a, vector<double> &b)
@@ -79,12 +71,12 @@ double fitnessfunction(vector <double> &y_obj, double *namda)
 	}
 	return max_fun;;
 }
-vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
+vector<unordered_set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
 {
   vector<vector<int> > domin_to(y_obj.size());
   vector<int> times_dominated(y_obj.size(), 0);
-  vector<set<int> > fronts(1);
-   int current_rank = 0;
+  vector<unordered_set<int> > fronts(1);
+  int current_rank = 0;
    for(int pidx1=0; pidx1 < y_obj.size(); pidx1++)
    {
       for(int pidx2=0; pidx2 < y_obj.size(); pidx2++)
@@ -98,8 +90,7 @@ vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
          fronts[current_rank].insert(pidx1);
       }
   }
-  //ranking.... 
-  set<int> next_front;
+  unordered_set<int> next_front;
   while(true)
   {
      for(auto i:fronts[current_rank])
@@ -120,21 +111,16 @@ vector<set<int> > non_dominated_sorting(vector<vector<double> > &y_obj)
   }
   return fronts;
 }
-void eval_R2(vector<vector<double> > &y_obj, vector<double> &fitness)
+void eval_R2(strIndividual &ind, int rank)
 {
-  vector<set<int> > fronts = non_dominated_sorting(y_obj);
-  fitness.assign(nInd, 0);
-  for(int r = 0; r < fronts.size(); r++)
-  {
+     double fit = 0.0;
      for(int w = 0; w < nWeight; w++)
      {
        double minv = DBL_MAX;
-       for(auto k:fronts[r])
-       {
-           minv = min(minv, fitnessfunction(y_obj[k], &namda[w*nobj]));
-       } 
-       fitness[r] += minv;
+       for(auto k:ind.fronts[rank])
+           minv = min(minv, fitnessfunction(ind.y_obj[k], &namda[w*nobj]));
+       fit += minv;
      }
-  }
+     ind.fitness.push_back(fit);
 }
 #endif

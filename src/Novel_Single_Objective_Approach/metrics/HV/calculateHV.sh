@@ -3,7 +3,7 @@
 ##Calculating the HV considering plus 10% for each objective
 #for alg in GDE3/POF MOEA-D/SBX/POF NSGAII/SBX/POF R2MOEA/SBX/POF IBEA/SBX/POF VSD-MOEA-eta-2/SBX/POF VSD-MOEA-eta-5/SBX/POF SMS-EMOA/SBX/POF
 #for alg in MOEA-D/SBX/POF NSGAII/SBX/POF R2MOEA/SBX/POF VSD-MOEA-eta-2-clean/SBX/POF
-for CR in 0.0 0.1 0.9
+for CR in 0.0 0.9
 do
    cont=0
 algname=(POF)

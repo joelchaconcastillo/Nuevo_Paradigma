@@ -2,7 +2,17 @@
 
 void InitializeBounds(int nvar, char * Instance)
 {
-	if( !strcmp("UF1", Instance) || !strcmp("UF2", Instance) || !strcmp("UF3", Instance) || !strcmp("UF4", Instance) || !strcmp("UF5", Instance) || !strcmp("UF6", Instance) || !strcmp("UF7", Instance) || !strcmp("UF8", Instance) || !strcmp("UF9", Instance) || !strcmp("UF10", Instance))
+	if(!strcmp("UF1", Instance) || !strcmp("UF2", Instance) || !strcmp("UF5", Instance) || !strcmp("UF6", Instance) || !strcmp("UF7", Instance))
+	{
+		vlowBound[0]=0.0;
+		vuppBound[0]=1.0;
+		for(int i = 1 ;  i < nvar; i++)
+		{
+		   vlowBound[i]=-1.0;
+		   vuppBound[i]=1.0;
+		}
+	}
+	else if(!strcmp("UF3", Instance))
 	{
 		for(int i = 0 ;  i < nvar; i++)
 		{
@@ -10,8 +20,28 @@ void InitializeBounds(int nvar, char * Instance)
 		   vuppBound[i]=1.0;
 		}
 	}
-	
-	if( !strcmp("WFG1", Instance) || !strcmp("WFG2", Instance) || !strcmp("WFG3", Instance) || !strcmp("WFG4", Instance) || !strcmp("WFG5", Instance) || !strcmp("WFG6", Instance) || !strcmp("WFG7", Instance) || !strcmp("WFG8", Instance) || !strcmp("WFG9", Instance))
+        else if(!strcmp("UF4", Instance))
+	{
+		vlowBound[0]=0.0;
+		vuppBound[0]=1.0;
+		for(int i = 1 ;  i < nvar; i++)
+		{
+		   vlowBound[i]=-2.0;
+		   vuppBound[i]=2.0;
+		}
+	}
+	else if(!strcmp("UF8", Instance) || !strcmp("UF9", Instance) || !strcmp("UF10", Instance))
+	{
+		vlowBound[0]= vlowBound[1] = 0.0;
+		vuppBound[0]= vuppBound[1] = 1.0;
+		for(int i = 2 ;  i < nvar; i++)
+		{
+		   vlowBound[i]=-2.0;
+		   vuppBound[i]=2.0;
+		}
+	}
+
+	else if( !strcmp("WFG1", Instance) || !strcmp("WFG2", Instance) || !strcmp("WFG3", Instance) || !strcmp("WFG4", Instance) || !strcmp("WFG5", Instance) || !strcmp("WFG6", Instance) || !strcmp("WFG7", Instance) || !strcmp("WFG8", Instance) || !strcmp("WFG9", Instance))
 	{
 		for(int i = 0 ;  i < nvar; i++)
 		{
@@ -19,7 +49,7 @@ void InitializeBounds(int nvar, char * Instance)
 		   vuppBound[i]=2.0*(i+1.0);
 		}
 	}
-	if( !strcmp("DTLZ1", Instance) || !strcmp("DTLZ2", Instance) || !strcmp("DTLZ3", Instance) || !strcmp("DTLZ4", Instance) || !strcmp("DTLZ5", Instance) || !strcmp("DTLZ6", Instance) || !strcmp("DTLZ7", Instance) )
+	else if( !strcmp("DTLZ1", Instance) || !strcmp("DTLZ2", Instance) || !strcmp("DTLZ3", Instance) || !strcmp("DTLZ4", Instance) || !strcmp("DTLZ5", Instance) || !strcmp("DTLZ6", Instance) || !strcmp("DTLZ7", Instance) )
 	{
 		for(int i = 0 ;  i < nvar; i++)
 		{
@@ -27,7 +57,7 @@ void InitializeBounds(int nvar, char * Instance)
 		   vuppBound[i]=1.0;
 		}
 	}
-	if( !strcmp("RWP1", Instance))
+	else if( !strcmp("RWP1", Instance))
         {
                 for(int i = 0 ;  i < nvar; i++)
                 {
@@ -35,7 +65,7 @@ void InitializeBounds(int nvar, char * Instance)
                    vuppBound[i]=1.0;
                 }
         }
-        if( !strcmp("RWP2", Instance))
+        else if( !strcmp("RWP2", Instance))
         {
                 for(int i = 0 ;  i < nvar; i++)
                 {

@@ -3,7 +3,7 @@ PATHA=../HV/  #/home/joel.chacon/Current/MyResearchTopics/Data_Decomposition/Sta
    do
      echo "--"${i}_2; 
      #for Di in 0.0 0.2 0.4 0.6 0.8 1.0
-     for CR in 0.0 0.1 0.9
+     for CR in 0.0 0.9
      do
        #echo ${PATHA}/POF/${i}_2_${Di}
        echo ${PATHA}/POF/${i}_2_${CR}
@@ -13,7 +13,7 @@ PATHA=../HV/  #/home/joel.chacon/Current/MyResearchTopics/Data_Decomposition/Sta
    do
      echo "--"${i}_3; 
      #for Di in 0.0 0.2 0.4 0.6 0.8 1.0
-     for CR in 0.0 0.1 0.9
+     for CR in 0.0 0.9
      do
        #echo ${PATHA}/POF/${i}_3_${Di}
        echo ${PATHA}/POF/${i}_3_${CR}
