@@ -200,7 +200,6 @@ void CMOEAD::init_population()
 	   child_idx[i-nPop] = i;
 	nfes +=nInd;
      } 
-     update_archive();
      readf.close();
 }
 void CMOEAD::evol_population()
@@ -240,7 +239,6 @@ void CMOEAD::evol_population()
            update_reference(pool[c_idx].y_obj+k*nobj); 
 	   pool[c_idx].changed[k]=false;
 	   add_archive(pool[c_idx].y_obj+ k*nobj, pool[c_idx].x_var + k*nvar);
-           if(n_archive == max_archive) update_archive();
      	   nfes++;
       }
       non_dominated_sorting(pool[c_idx].y_obj, pool[c_idx].f, pool[c_idx].sf, nInd);
@@ -533,6 +531,7 @@ void CMOEAD::add_archive(double *y_obj, double *x_var)
    for(int m = 0; m < nobj; m++) archive_y[n_archive*nobj + m ] = y_obj[m];
    for(int n = 0; n < nvar; n++) archive_x[n_archive*nvar + n ] = x_var[n];
    n_archive++;
+   if( n_archive == max_archive) update_archive();
 }
 void CMOEAD::update_archive()
 {
