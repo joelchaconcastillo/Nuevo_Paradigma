@@ -164,7 +164,7 @@ void CMOEAD::init_population()
     
 
     memset(hypermat_assig, -1, sizeof(int)*NP*NP*nInd);
-    fill_n(fitness, -1.0, NP*nInd);
+    fill_n(fitness, NP*nInd, -1.0);
     fill_n(memo_dist, NP*NP, -1);
     fill_n(idealpoint, nobj, 1000000000);
     fill_n(archive_y, max_archive*nobj, 1000);
@@ -223,8 +223,8 @@ void CMOEAD::evol_population()
          	for(int jj = 0; jj < nInd; jj++)
          	{
         	   if(*asg_1 == -1) costs[ii*nInd+jj] =-distance_obj(pool[idx_target].y_obj+ii*nobj, pool[idx1].y_obj+nobj*jj);
-        	   if(*asg_2 == -1) costs[ii*nInd+jj+nInd*nInd] =-distance_obj(pool[idx_target].y_obj+ii*nobj, pool[idx2].y_obj+nobj*jj);
-        	   if(*asg_3 == -1) costs[ii*nInd+jj+2*nInd*nInd] =-distance_obj(pool[idx_target].y_obj + ii*nobj, pool[idx3].y_obj+nobj*jj);
+        	   if(*asg_2 == -1) costs[nInd*nInd+ii*nInd+jj] =-distance_obj(pool[idx_target].y_obj+ii*nobj, pool[idx2].y_obj+nobj*jj);
+        	   if(*asg_3 == -1) costs[2*nInd*nInd + ii*nInd+jj] =-distance_obj(pool[idx_target].y_obj + ii*nobj, pool[idx3].y_obj+nobj*jj);
          	}
           }
       }
@@ -244,7 +244,6 @@ void CMOEAD::evol_population()
            if(n_archive == max_archive) update_archive();
      	   nfes++;
       }
-      fill_n(pool[c_idx].ff, nInd, -1.0);
       non_dominated_sorting(pool[c_idx].y_obj, pool[c_idx].f, pool[c_idx].sf, nInd);
       
      for(int s = 0; s< nPop; s++)
@@ -320,6 +319,7 @@ void CMOEAD::save_pos(char saveFilename[4024])
 }
 void CMOEAD::replacement_phase()
 {
+  fill_n(fitness, NP*nInd, -1.0);
   auto compare_l = [&](const int &a, const int &b)->bool{return compareR2(a, b);};
   unordered_set<int> penalized, survivors;
   priority_queue<int, vector<int>, decltype(compare_l)> candidates(compare_l);
@@ -508,12 +508,8 @@ bool CMOEAD::compareR2(int a, int b)
 {
    for(int i = 0; i < nInd; i++)
    {
-      if( pool[a].sf[i] == 0 || pool[b].sf[i]==0) return false;
-      if(pool[a].ff[i] < 0)
         eval_R2(pool[a].y_obj, pool[a].f+i*nInd, pool[a].sf[i], pool[a].ff[i]);
-      if( pool[b].ff[i] < 0)
         eval_R2(pool[b].y_obj, pool[b].f+i*nInd, pool[b].sf[i], pool[b].ff[i]);
-
       if(pool[a].ff[i] > pool[b].ff[i]) return true;
       else if(pool[b].ff[i] > pool[a].ff[i]) return false;
    }
@@ -521,7 +517,8 @@ bool CMOEAD::compareR2(int a, int b)
 }
 void CMOEAD::eval_R2(double *y_obj, int *front, int size_front, double &fitness)
 {
-     if(size_front == 0) {fitness=-1.0; return;} 
+     if(size_front == 0) {fitness = 0.0; return;} 
+     if( fitness > 0 ) return;
      fitness = 0.0;
      for(int w = 0; w < nWeight; w++)
      {
