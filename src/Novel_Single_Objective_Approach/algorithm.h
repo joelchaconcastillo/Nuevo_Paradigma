@@ -63,9 +63,10 @@ void CMOEAD::update_parameterD()
 }
 double CMOEAD::distance_var(int a, int b)
 {
-   double *distab=pointer_dist(a,b);
-   if(*distab > 0.0) return *distab;
+   //double *distab=pointer_dist(a,b);
+   //if(*distab > 0.0) return *distab;
    int *asg_1 = pointer_hyp(a,b);
+   *asg_1=-1;
    if(*asg_1==-1)
    {
      for(int i = 0; i < nInd; i++)
@@ -82,7 +83,7 @@ double CMOEAD::distance_var(int a, int b)
          dist += factor*factor;
       }
    }
-   (*distab) = sqrt(dist);
+//   (*distab) = sqrt(dist);
    return sqrt(dist);
 }
 CMOEAD::~CMOEAD()
@@ -214,6 +215,7 @@ void CMOEAD::evol_population()
       for(int n = 0; n < nvar*nInd; n++)   pool[c_idx].x_var[n] = pool[idx_target].x_var[n];
 
       int *asg_1  = pointer_hyp(idx_target, idx1) , *asg_2 = pointer_hyp(idx_target, idx2), *asg_3 = pointer_hyp(idx_target, idx3);
+      *asg_1 = *asg_2 = *asg_3 = -1;
       if( *asg_1 == -1 || *asg_2 == -1 || *asg_3 == -1)
       {
           for(int ii = 0; ii < nInd; ii++)
@@ -302,12 +304,12 @@ void CMOEAD::save_front(char saveFilename[4024])
           fout<<"\n";
       }
     }
-    for(int n=0; n < size_archive; n++)
-    {
-          for(int k=0;k<nobj;k++)
-             fout<<archive_y[n*nobj + k]<<"  ";
-          fout<<"\n";
-    }
+  //  for(int n=0; n < size_archive; n++)
+  //  {
+  //        for(int k=0;k<nobj;k++)
+  //           fout<<archive_y[n*nobj + k]<<"  ";
+  //        fout<<"\n";
+  //  }
     fout.close();
 }
 void CMOEAD::save_pos(char saveFilename[4024])
@@ -434,6 +436,9 @@ void CMOEAD::diff_evo_xoverA_exp(double *ind0, double *ind1, double *ind2, doubl
          child[n] = ind1[asg_1[i]*nvar + j] + F*(ind2[asg_2[i]*nvar + j] - ind3[asg_3[i]*nvar+j]);
 	  if(child[n] < vlowBound[j]) child[n] = ind0[n];
 	  if(child[n]>vuppBound[j]) child[n] = ind0[n];
+	  if(child[n] < vlowBound[j]) child[n] = vlowBound[n];
+	  if(child[n]>vuppBound[j]) child[n] = vuppBound[n];
+
 	   childchanged[i]=true;
 	   n++;
 	   n %= (nvar*nInd);
@@ -503,11 +508,12 @@ bool CMOEAD::compareR2(int a, int b)
 {
    for(int i = 0; i < nInd; i++)
    {
-
+      if( pool[a].sf[i] == 0 || pool[b].sf[i]==0) return false;
       if(pool[a].ff[i] < 0)
         eval_R2(pool[a].y_obj, pool[a].f+i*nInd, pool[a].sf[i], pool[a].ff[i]);
       if( pool[b].ff[i] < 0)
         eval_R2(pool[b].y_obj, pool[b].f+i*nInd, pool[b].sf[i], pool[b].ff[i]);
+
       if(pool[a].ff[i] > pool[b].ff[i]) return true;
       else if(pool[b].ff[i] > pool[a].ff[i]) return false;
    }
@@ -527,12 +533,14 @@ void CMOEAD::eval_R2(double *y_obj, int *front, int size_front, double &fitness)
 }
 void CMOEAD::add_archive(double *y_obj, double *x_var)
 {
+   return;
    for(int m = 0; m < nobj; m++) archive_y[n_archive*nobj + m ] = y_obj[m];
    for(int n = 0; n < nvar; n++) archive_x[n_archive*nvar + n ] = x_var[n];
    n_archive++;
 }
 void CMOEAD::update_archive()
 {
+  return;
   memset(contribution_R2, 0, sizeof(double)*max_archive);
   memset(rejected, true, sizeof(bool)*max_archive);
   non_dominated_sorting(archive_y, f_archive, sf_archive, n_archive);  
